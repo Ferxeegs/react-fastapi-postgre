@@ -1,0 +1,172 @@
+services:
+  # --- CORE SERVICES ---
+  db:
+    image: postgres:15-alpine  # Menggunakan PostgreSQL 15 (Alpine version lebih ringan)
+    container_name: db_app
+    restart: always
+    ports:
+      - "5432:5432"  # Port default PostgreSQL adalah 5432
+    env_file: .env
+    environment:
+      - TZ=Asia/Jakarta
+      # PostgreSQL menggunakan variabel berikut:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Path data PostgreSQL berbeda dengan MySQL
+    healthcheck:
+      # Menggunakan pg_isready untuk memastikan database siap menerima koneksi
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-bridge
+
+  redis:
+    image: redis:alpine
+    container_name: redis_app
+    restart: always
+    environment:
+      - TZ=Asia/Jakarta
+    networks:
+      - app-bridge
+
+  adminer:
+    image: adminer
+    container_name: adminer_app
+    restart: always
+    env_file: .env
+    depends_on:
+      - db
+    networks:
+      - app-bridge
+
+  # --- BACKEND SERVICES ---
+  backend-dev:
+    profiles: ["dev"]
+    build:
+      context: ./backend
+      dockerfile: ./builder/local/Dockerfile
+    container_name: api_app
+    volumes:
+      - ./backend:/app
+    env_file: .env  # Menyuntikkan SEMUA variabel .env (SECRET_KEY, dsb) ke dalam FastAPI
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - ENV=development
+      - TZ=Asia/Jakarta
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-bridge
+
+  backend-prod:
+    profiles: ["prod"]
+    build:
+      context: ./backend
+      dockerfile: ./builder/prod/Dockerfile
+    container_name: api_app
+    restart: always
+    volumes:
+      - backend_media_data:/app/uploads
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - ENV=production
+      - TZ=Asia/Jakarta
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-bridge
+
+  # --- FRONTEND SERVICES ---
+  frontend-dev:
+    profiles: ["dev"]
+    build:
+      context: ./frontend
+      dockerfile: ./builder/local/Dockerfile
+    container_name: ui_app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Mencegah konflik node_modules lokal & container (anonymous volume)
+      - /app/.vite # Cache Vite untuk performa lebih baik
+    ports:
+      - "5173:5173" # Expose port langsung untuk akses langsung ke Vite dev server
+    environment:
+      # PENTING: Memaksa Vite/Chokidar mendeteksi perubahan file di Docker
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - NODE_ENV=development
+      - VITE_HMR_PORT=5173
+      # Optimasi Node.js untuk performa
+      - NODE_OPTIONS=--max-old-space-size=4096
+    env_file: .env
+    # Healthcheck untuk memastikan container siap
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-bridge
+    # Restart policy untuk development
+    restart: unless-stopped
+
+  frontend-prod:
+    profiles: ["prod"]
+    build:
+      context: ./frontend
+      dockerfile: ./builder/prod/Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+    container_name: ui_app
+    restart: always
+    env_file: .env
+    networks:
+      - app-bridge
+
+  # --- NGINX GATEWAY ---
+  nginx-dev:
+    profiles: ["dev"]
+    build:
+      context: ./nginx
+      dockerfile: ./builder/local/Dockerfile
+    container_name: gateway_app
+    ports:
+      - "80:80"
+    depends_on:
+      frontend-dev:
+        condition: service_healthy
+      backend-dev:
+        condition: service_started
+    networks:
+      - app-bridge
+
+  # nginx-prod:
+  #   profiles: ["prod"]
+  #   build:
+  #     context: ./nginx
+  #     dockerfile: ./builder/prod/Dockerfile
+  #   container_name: laundry_gateway_prod
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   restart: always
+  #   depends_on:
+  #     - frontend-prod
+  #     - backend-prod
+  #   networks:
+  #     - app-bridge
+
+networks:
+  app-bridge:
+    external: true
+
+volumes:
+  postgres_data:
+  backend_media_data:
