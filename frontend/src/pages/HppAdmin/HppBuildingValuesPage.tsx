@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Select } from "../../components/ui/Select";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import { hppAPI } from "../../utils/api";
@@ -6,6 +7,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../compon
 import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
+import { useToast } from "../../context/ToastContext";
 
 export default function HppBuildingValuesPage() {
   const [rows, setRows] = useState<any[]>([]);
@@ -17,6 +19,7 @@ export default function HppBuildingValuesPage() {
     category: "sederhana",
     rent_price_index: 0,
   });
+  const { success, error: showError } = useToast();
 
   const load = async () => {
     const res = await hppAPI.getAdminBuildingValues();
@@ -110,8 +113,13 @@ export default function HppBuildingValuesPage() {
                           title="Hapus"
                           onClick={async () => {
                             if (!window.confirm("Hapus data WB ini?")) return;
-                            await hppAPI.deleteAdminBuildingValue(r.id);
-                            load();
+                            try {
+                              await hppAPI.deleteAdminBuildingValue(r.id);
+                              success("Nilai wajar bangunan berhasil dihapus!");
+                              load();
+                            } catch (err: any) {
+                              showError(err.message || "Gagal menghapus nilai wajar bangunan.");
+                            }
                           }}
                         >
                           <TrashBinIcon className="size-4" />
@@ -139,10 +147,14 @@ export default function HppBuildingValuesPage() {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
-            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500">
-              <option value="sederhana">Sederhana</option>
-              <option value="tidak_sederhana">Tidak sederhana</option>
-            </select>
+            <Select
+              value={form.category}
+              options={[
+                { value: "sederhana", label: "Sederhana" },
+                { value: "tidak_sederhana", label: "Tidak sederhana" },
+              ]}
+              onChange={(v) => setForm({ ...form, category: v })}
+            />
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Indeks Harga Sewa</label>
@@ -156,14 +168,20 @@ export default function HppBuildingValuesPage() {
           <button 
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
-              if (editingId) {
-                await hppAPI.updateAdminBuildingValue(editingId, form);
-              } else {
-                await hppAPI.createAdminBuildingValue(form);
+              try {
+                if (editingId) {
+                  await hppAPI.updateAdminBuildingValue(editingId, form);
+                  success("Nilai wajar bangunan berhasil diperbarui!");
+                } else {
+                  await hppAPI.createAdminBuildingValue(form);
+                  success("Nilai wajar bangunan berhasil ditambahkan!");
+                }
+                closeModal();
+                resetForm();
+                load();
+              } catch (err: any) {
+                showError(err.message || "Gagal menyimpan nilai wajar bangunan.");
               }
-              closeModal();
-              resetForm();
-              load();
             }}
           >
             {editingId ? "Simpan Perubahan" : "Tambah WB"}

@@ -143,6 +143,7 @@ export function PricingSection({
                 min={0}
                 value={simulatedGrossStr}
                 onChange={(e) => setSimulatedGrossStr(e.target.value)}
+                onWheel={(e) => (e.target as HTMLInputElement).blur()}
                 className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10 transition-shadow dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500 dark:focus:ring-brand-500/20"
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Gunakan nilai rekomendasi, pembulatan, atau nominal lain untuk uji coba.</p>
@@ -160,12 +161,12 @@ export function PricingSection({
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 <tr>
-                  <td className="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">Tarif bruto</td>
+                  <td className="px-4 py-3 font-medium text-gray-700 dark:text-gray-200">Tarif bruto</td>
                   <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white">{formatCurrency(pricingSimulation.gross)}</td>
                 </tr>
                 {pricingSimulation.taxes.map((t) => (
                   <tr key={t.name}>
-                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                    <td className="px-4 py-3 text-gray-700 dark:text-gray-200">
                       {t.name}
                       <span className="mt-0.5 block text-xs text-gray-500">DPP = {formatCurrency(t.dpp)}</span>
                     </td>

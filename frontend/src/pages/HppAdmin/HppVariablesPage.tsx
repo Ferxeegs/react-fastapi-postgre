@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../compon
 import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PencilIcon, TrashBinIcon, PlusIcon } from "../../icons";
+import { useToast } from "../../context/ToastContext";
 
 export default function HppVariablesPage() {
   const [rows, setRows] = useState<any[]>([]);
@@ -13,6 +14,7 @@ export default function HppVariablesPage() {
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const { isOpen, openModal, closeModal } = useModal();
+  const { success, error: showError } = useToast();
 
   const filteredRows = rows.filter((item) =>
     item.name?.toLowerCase().includes(search.toLowerCase())
@@ -107,8 +109,13 @@ export default function HppVariablesPage() {
                         title="Hapus"
                         onClick={async () => {
                           if (!window.confirm("Hapus variabel ini?")) return;
-                          await hppAPI.deleteRentalVariable(r.id);
-                          load();
+                          try {
+                            await hppAPI.deleteRentalVariable(r.id);
+                            success("Variabel berhasil dihapus!");
+                            load();
+                          } catch (err: any) {
+                            showError(err.message || "Gagal menghapus variabel");
+                          }
                         }}
                       >
                         <TrashBinIcon className="size-4" />
@@ -169,14 +176,20 @@ export default function HppVariablesPage() {
           <button
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
             onClick={async () => {
-              if (editingId) {
-                await hppAPI.updateRentalVariable(editingId, { name: form.name, value: form.value });
-              } else {
-                await hppAPI.createRentalVariable(form);
+              try {
+                if (editingId) {
+                  await hppAPI.updateRentalVariable(editingId, { name: form.name, value: form.value });
+                  success("Variabel berhasil diperbarui!");
+                } else {
+                  await hppAPI.createRentalVariable(form);
+                  success("Variabel berhasil ditambahkan!");
+                }
+                closeModal();
+                resetForm();
+                load();
+              } catch (err: any) {
+                showError(err.message || "Terjadi kesalahan saat menyimpan data");
               }
-              closeModal();
-              resetForm();
-              load();
             }}
           >
             {editingId ? "Simpan Perubahan" : "Tambah Variabel"}

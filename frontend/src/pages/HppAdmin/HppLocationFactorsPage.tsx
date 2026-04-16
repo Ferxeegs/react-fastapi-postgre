@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../compon
 import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
+import { useToast } from "../../context/ToastContext";
 
 export default function HppLocationFactorsPage() {
   const [rows, setRows] = useState<any[]>([]);
@@ -13,6 +14,7 @@ export default function HppLocationFactorsPage() {
   const [form, setForm] = useState({ location: "", percentage: 100 });
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
+  const { success, error: showError } = useToast();
 
   const load = async () => {
     const res = await hppAPI.getAdminLocationFactors();
@@ -101,8 +103,13 @@ export default function HppLocationFactorsPage() {
                           title="Hapus"
                           onClick={async () => {
                             if (!window.confirm("Hapus faktor lokasi ini?")) return;
-                            await hppAPI.deleteAdminLocationFactor(r.id);
-                            load();
+                            try {
+                              await hppAPI.deleteAdminLocationFactor(r.id);
+                              success("Faktor lokasi berhasil dihapus!");
+                              load();
+                            } catch (err: any) {
+                              showError(err.message || "Gagal menghapus faktor lokasi.");
+                            }
                           }}
                         >
                           <TrashBinIcon className="size-4" />
@@ -140,14 +147,20 @@ export default function HppLocationFactorsPage() {
           <button 
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
-              if (editingId) {
-                await hppAPI.updateAdminLocationFactor(editingId, form);
-              } else {
-                await hppAPI.createAdminLocationFactor(form);
+              try {
+                if (editingId) {
+                  await hppAPI.updateAdminLocationFactor(editingId, form);
+                  success("Faktor lokasi berhasil diperbarui!");
+                } else {
+                  await hppAPI.createAdminLocationFactor(form);
+                  success("Faktor lokasi berhasil ditambahkan!");
+                }
+                closeModal();
+                resetForm();
+                load();
+              } catch (err: any) {
+                showError(err.message || "Gagal menyimpan faktor lokasi.");
               }
-              closeModal();
-              resetForm();
-              load();
             }}
           >
             {editingId ? "Simpan Perubahan" : "Tambah FP2"}

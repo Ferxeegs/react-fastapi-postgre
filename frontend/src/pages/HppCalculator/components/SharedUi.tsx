@@ -1,4 +1,8 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useRef, useEffect } from "react";
+import { Select, type SelectOption } from "../../../components/ui/Select";
+
+export { Select as CustomSelect };
+export type { SelectOption };
 
 export function WizardStepper({
   currentStep,
@@ -34,8 +38,8 @@ export function WizardStepper({
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className={`text-sm font-bold leading-tight tracking-tight ${active ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>{s.title}</p>
-                <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-gray-400 dark:text-gray-500">{s.subtitle}</p>
+                <p className={`text-sm font-bold leading-tight tracking-tight ${active ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-300"}`}>{s.title}</p>
+                <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-gray-400 dark:text-gray-400">{s.subtitle}</p>
               </div>
             </div>
           );
@@ -69,6 +73,7 @@ export function Field({
         value={value} 
         onChange={(e) => onChange(e.target.value)} 
         placeholder={placeholder} 
+        onWheel={(e) => (e.target as HTMLInputElement).blur()}
         className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10 transition-shadow dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500 dark:focus:ring-brand-500/20" 
       />
     </div>
@@ -94,7 +99,7 @@ export function SegmentButton({
       className={`h-11 rounded-lg text-sm font-semibold transition-all ${
         active
           ? "bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-500 shadow-sm dark:bg-brand-500/20 dark:text-brand-300"
-          : "border border-gray-200 bg-white text-gray-700 shadow-theme-xs hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-800/80"
+          : "border border-gray-200 bg-white text-gray-700 shadow-theme-xs hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-800/80"
       } disabled:cursor-not-allowed disabled:opacity-50`}
     >
       {children}

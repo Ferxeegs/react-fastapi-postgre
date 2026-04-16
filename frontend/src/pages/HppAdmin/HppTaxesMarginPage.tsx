@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../compon
 import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
+import { useToast } from "../../context/ToastContext";
 
 export default function HppTaxesMarginPage() {
   const [taxes, setTaxes] = useState<any[]>([]);
@@ -17,6 +18,7 @@ export default function HppTaxesMarginPage() {
   const [search, setSearch] = useState("");
   const taxModal = useModal();
   const marginModal = useModal();
+  const { success, error: showError } = useToast();
   const filteredTaxes = taxes.filter((item) =>
     `${item.name} ${item.description || ""}`.toLowerCase().includes(search.toLowerCase())
   );
@@ -97,8 +99,13 @@ export default function HppTaxesMarginPage() {
                     title="Hapus"
                     onClick={async () => {
                       if (!window.confirm("Hapus margin fee ini?")) return;
-                      await hppAPI.deleteAdminMarginFee(m.id);
-                      load();
+                      try {
+                        await hppAPI.deleteAdminMarginFee(m.id);
+                        success("Margin fee berhasil dihapus!");
+                        load();
+                      } catch (err: any) {
+                        showError(err.message || "Gagal menghapus margin fee.");
+                      }
                     }}
                   >
                     <TrashBinIcon className="size-4" />
@@ -158,8 +165,13 @@ export default function HppTaxesMarginPage() {
                           title="Hapus"
                           onClick={async () => {
                             if (!window.confirm("Hapus pajak ini?")) return;
-                            await hppAPI.deleteAdminTax(t.id);
-                            load();
+                            try {
+                              await hppAPI.deleteAdminTax(t.id);
+                              success("Pajak berhasil dihapus!");
+                              load();
+                            } catch (err: any) {
+                              showError(err.message || "Gagal menghapus pajak.");
+                            }
                           }}
                         >
                           <TrashBinIcon className="size-4" />
@@ -205,12 +217,21 @@ export default function HppTaxesMarginPage() {
           <button 
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
-              if (editingTaxId) await hppAPI.updateAdminTax(editingTaxId, form);
-              else await hppAPI.createAdminTax(form);
-              taxModal.closeModal();
-              setEditingTaxId(null);
-              setForm({ name: "", rate: 0, coverage: 0, description: "" });
-              load();
+              try {
+                if (editingTaxId) {
+                  await hppAPI.updateAdminTax(editingTaxId, form);
+                  success("Akses pajak berhasil diperbarui!");
+                } else {
+                  await hppAPI.createAdminTax(form);
+                  success("Akses pajak berhasil ditambahkan!");
+                }
+                taxModal.closeModal();
+                setEditingTaxId(null);
+                setForm({ name: "", rate: 0, coverage: 0, description: "" });
+                load();
+              } catch (err: any) {
+                showError(err.message || "Gagal menyimpan pajak.");
+              }
             }}
           >
             {editingTaxId ? "Simpan Perubahan" : "Tambah"}
@@ -241,15 +262,21 @@ export default function HppTaxesMarginPage() {
           <button 
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
-              if (editingMarginId) {
-                await hppAPI.updateAdminMarginFeeById(editingMarginId, marginForm);
-              } else {
-                await hppAPI.createAdminMarginFee(marginForm);
+              try {
+                if (editingMarginId) {
+                  await hppAPI.updateAdminMarginFeeById(editingMarginId, marginForm);
+                  success("Margin fee berhasil diperbarui!");
+                } else {
+                  await hppAPI.createAdminMarginFee(marginForm);
+                  success("Margin fee berhasil ditambahkan!");
+                }
+                marginModal.closeModal();
+                setEditingMarginId(null);
+                setMarginForm({ name: "", rate: 0 });
+                load();
+              } catch (err: any) {
+                showError(err.message || "Gagal menyimpan margin fee.");
               }
-              marginModal.closeModal();
-              setEditingMarginId(null);
-              setMarginForm({ name: "", rate: 0 });
-              load();
             }}
           >
             {editingMarginId ? "Simpan Perubahan" : "Tambah"}

@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../compon
 import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
+import { useToast } from "../../context/ToastContext";
 
 export default function HppEntityFactorsPage() {
   const [rows, setRows] = useState<any[]>([]);
@@ -13,6 +14,7 @@ export default function HppEntityFactorsPage() {
   const [form, setForm] = useState({ entity_type: "", category: "", percentage: 0 });
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
+  const { success, error: showError } = useToast();
 
   const load = async () => {
     const res = await hppAPI.getAdminEntityFactors();
@@ -99,8 +101,13 @@ export default function HppEntityFactorsPage() {
                           title="Hapus"
                           onClick={async () => {
                             if (!window.confirm("Hapus faktor entitas ini?")) return;
-                            await hppAPI.deleteAdminEntityFactor(r.id);
-                            load();
+                            try {
+                              await hppAPI.deleteAdminEntityFactor(r.id);
+                              success("Faktor entitas berhasil dihapus!");
+                              load();
+                            } catch (err: any) {
+                              showError(err.message || "Gagal menghapus faktor entitas.");
+                            }
                           }}
                         >
                           <TrashBinIcon className="size-4" />
@@ -169,9 +176,20 @@ export default function HppEntityFactorsPage() {
           <button 
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
-              if (editingId) await hppAPI.updateAdminEntityFactor(editingId, form);
-              else await hppAPI.createAdminEntityFactor(form);
-              closeModal(); resetForm(); load();
+              try {
+                if (editingId) {
+                  await hppAPI.updateAdminEntityFactor(editingId, form);
+                  success("Faktor entitas berhasil diperbarui!");
+                } else {
+                  await hppAPI.createAdminEntityFactor(form);
+                  success("Faktor entitas berhasil ditambahkan!");
+                }
+                closeModal();
+                resetForm();
+                load();
+              } catch (err: any) {
+                showError(err.message || "Gagal menyimpan faktor entitas.");
+              }
             }}
           >
             {editingId ? "Simpan Perubahan" : "Tambah Faktor"}

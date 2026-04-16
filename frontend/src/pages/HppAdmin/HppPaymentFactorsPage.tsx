@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../compon
 import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
+import { useToast } from "../../context/ToastContext";
 
 export default function HppPaymentFactorsPage() {
   const [rows, setRows] = useState<any[]>([]);
@@ -13,6 +14,7 @@ export default function HppPaymentFactorsPage() {
   const [form, setForm] = useState({ lease_term: "", rate: 0, description: "" });
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
+  const { success, error: showError } = useToast();
 
   const load = async () => {
     const res = await hppAPI.getAdminPaymentFactors();
@@ -99,8 +101,13 @@ export default function HppPaymentFactorsPage() {
                           title="Hapus"
                           onClick={async () => {
                             if (!window.confirm("Hapus faktor termin ini?")) return;
-                            await hppAPI.deleteAdminPaymentFactor(r.id);
-                            load();
+                            try {
+                              await hppAPI.deleteAdminPaymentFactor(r.id);
+                              success("Faktor pembayaran berhasil dihapus!");
+                              load();
+                            } catch (err: any) {
+                              showError(err.message || "Gagal menghapus faktor pembayaran.");
+                            }
                           }}
                         >
                           <TrashBinIcon className="size-4" />
@@ -141,9 +148,20 @@ export default function HppPaymentFactorsPage() {
           <button 
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
-              if (editingId) await hppAPI.updateAdminPaymentFactor(editingId, form);
-              else await hppAPI.createAdminPaymentFactor(form);
-              closeModal(); resetForm(); load();
+              try {
+                if (editingId) {
+                  await hppAPI.updateAdminPaymentFactor(editingId, form);
+                  success("Faktor pembayaran berhasil diperbarui!");
+                } else {
+                  await hppAPI.createAdminPaymentFactor(form);
+                  success("Faktor pembayaran berhasil ditambahkan!");
+                }
+                closeModal();
+                resetForm();
+                load();
+              } catch (err: any) {
+                showError(err.message || "Gagal menyimpan faktor pembayaran.");
+              }
             }}
           >
             {editingId ? "Simpan Perubahan" : "Tambah Faktor"}

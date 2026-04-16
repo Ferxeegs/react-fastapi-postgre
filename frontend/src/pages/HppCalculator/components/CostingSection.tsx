@@ -8,7 +8,7 @@ import type {
   TenantCategory,
 } from "../calculatorTypes";
 import { categoryStringToTenantCategory, formatEntityFactorOptionLabel } from "../entityFactorLabels";
-import { Field, SegmentButton, WizardStepper } from "./SharedUi";
+import { CustomSelect, Field, SegmentButton, WizardStepper } from "./SharedUi";
 
 export function CostingSection({
   wizardStep,
@@ -165,14 +165,16 @@ export function CostingSection({
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Identitas sewa</p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Field label="Nama penyewa *" value={partnerName} onChange={setPartnerName} placeholder="Nama perorangan / badan usaha" />
-                  <div>
-                    <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Kategori penyewa *</p>
-                    <select value={tenantCategory} onChange={(e) => onTenantCategoryChange(e.target.value as TenantCategory)} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800">
-                      <option value="bisnis">Bisnis (komersial)</option>
-                      <option value="non-bisnis">Non-bisnis</option>
-                      <option value="sosial">Sosial / kemasyarakatan</option>
-                    </select>
-                  </div>
+                  <CustomSelect
+                    label="Kategori penyewa *"
+                    value={tenantCategory}
+                    options={[
+                      { value: "bisnis", label: "Bisnis (komersial)" },
+                      { value: "non-bisnis", label: "Non-bisnis" },
+                      { value: "sosial", label: "Sosial / kemasyarakatan" },
+                    ]}
+                    onChange={(v) => onTenantCategoryChange(v)}
+                  />
                 </div>
               </div>
 
@@ -180,58 +182,46 @@ export function CostingSection({
                 <div>
                   <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Luas tanah (m²)</p>
                   <div className="relative">
-                    <input type="number" value={landArea || ""} onChange={(e) => setLandArea(Number(e.target.value))} placeholder="0" className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-3 pr-12 text-sm dark:border-gray-700 dark:bg-gray-800" />
+                    <input type="number" value={landArea || ""} onChange={(e) => setLandArea(Number(e.target.value))} placeholder="0" onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-3 pr-12 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">m²</span>
                   </div>
                 </div>
-                <div>
-                  <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Nilai wajar tanah (WT)</p>
-                  <select value={selectedLandValueId ?? ""} onChange={(e) => setSelectedLandValueId(Number(e.target.value))} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800">
-                    {(master?.fair_land_values || []).map((wt) => (
-                      <option key={wt.id} value={wt.id}>
-                        {wt.asset_location} — {wt.road_name}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {selectedLandValue?.asset_location} — {formatCurrency(Number(selectedLandValue?.appraised_value ?? 0))}/m²
-                  </p>
-                </div>
-                <div>
-                  <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Entitas penyewa (FP1)</p>
-                  <select
-                    value={selectedLandEntityFactorId ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (v === "") {
-                        setSelectedLandEntityFactorId(null);
-                        return;
-                      }
-                      const id = Number(v);
-                      setSelectedLandEntityFactorId(id);
-                      const row = landEntityFactorRows.find((r) => r.id === id);
-                      if (row) setTenantCategory(categoryStringToTenantCategory(row.category));
-                    }}
-                    className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800"
-                  >
-                    <option value="">— Pilih Entitas —</option>
-                    {landEntityFactorRows.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {formatEntityFactorOptionLabel(f.entity_type, f.category, Number(f.percentage))}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Lokasi aset (FP2)</p>
-                  <select value={selectedLocationFactorId ?? ""} onChange={(e) => setSelectedLocationFactorId(Number(e.target.value))} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800">
-                    {(master?.location_adjustment_factors || []).map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.location} ({l.percentage}%)
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <CustomSelect
+                  label="Nilai wajar tanah (WT)"
+                  value={selectedLandValueId}
+                  options={(master?.fair_land_values || []).map((wt) => ({
+                    value: wt.id,
+                    label: `${wt.asset_location} — ${wt.road_name}`,
+                    subLabel: `${formatCurrency(Number(wt.appraised_value ?? 0))}/m²`
+                  }))}
+                  onChange={setSelectedLandValueId}
+                />
+                <CustomSelect
+                  label="Entitas penyewa (FP1)"
+                  value={selectedLandEntityFactorId}
+                  placeholder="— Pilih Entitas —"
+                  options={landEntityFactorRows.map((f) => ({
+                    value: f.id,
+                    label: f.entity_type,
+                    subLabel: `${f.category} (${Number(f.percentage)}%)`
+                  }))}
+                  onChange={(v) => {
+                    const id = v;
+                    setSelectedLandEntityFactorId(id);
+                    const row = landEntityFactorRows.find((r) => r.id === id);
+                    if (row) setTenantCategory(categoryStringToTenantCategory(row.category));
+                  }}
+                />
+                <CustomSelect
+                  label="Lokasi aset (FP2)"
+                  value={selectedLocationFactorId}
+                  options={(master?.location_adjustment_factors || []).map((l) => ({
+                    value: l.id,
+                    label: l.location,
+                    subLabel: `${l.percentage}%`
+                  }))}
+                  onChange={setSelectedLocationFactorId}
+                />
               </div>
 
               <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-6 shadow-sm dark:border-brand-900/40 dark:from-brand-950/20 dark:to-gray-900">
@@ -261,59 +251,46 @@ export function CostingSection({
                 <div>
                   <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Luas bangunan (m²)</p>
                   <div className="relative">
-                    <input type="number" value={buildingArea || ""} onChange={(e) => setBuildingArea(Number(e.target.value))} placeholder="0" className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-3 pr-12 text-sm dark:border-gray-700 dark:bg-gray-800" />
+                    <input type="number" value={buildingArea || ""} onChange={(e) => setBuildingArea(Number(e.target.value))} placeholder="0" onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-3 pr-12 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">m²</span>
                   </div>
                 </div>
-                <div>
-                  <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Nilai wajar bangunan (WB)</p>
-                  <select value={selectedBuildingValueId ?? ""} onChange={(e) => setSelectedBuildingValueId(Number(e.target.value))} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800">
-                    {(master?.fair_building_values || []).map((wb) => (
-                      <option key={wb.id} value={wb.id}>
-                        {wb.asset_location} — {wb.category}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {selectedBuildingValue?.asset_location} ({selectedBuildingValue?.category}) — {formatCurrency(Number(selectedBuildingValue?.rent_price_index ?? 0))}
-                    /m²
-                  </p>
-                </div>
-                <div>
-                  <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Entitas penyewa (FP1)</p>
-                  <select
-                    value={selectedBuildingEntityFactorId ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (v === "") {
-                        setSelectedBuildingEntityFactorId(null);
-                        return;
-                      }
-                      const id = Number(v);
-                      setSelectedBuildingEntityFactorId(id);
-                      const row = buildingEntityFactorRows.find((r) => r.id === id);
-                      if (row) setTenantCategory(categoryStringToTenantCategory(row.category));
-                    }}
-                    className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800"
-                  >
-                    <option value="">— Pilih Entitas —</option>
-                    {buildingEntityFactorRows.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {formatEntityFactorOptionLabel(f.entity_type, f.category, Number(f.percentage))}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Lokasi aset (FP2)</p>
-                  <select value={selectedLocationFactorId ?? ""} onChange={(e) => setSelectedLocationFactorId(Number(e.target.value))} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800">
-                    {(master?.location_adjustment_factors || []).map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.location} ({l.percentage}%)
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <CustomSelect
+                  label="Nilai wajar bangunan (WB)"
+                  value={selectedBuildingValueId}
+                  options={(master?.fair_building_values || []).map((wb) => ({
+                    value: wb.id,
+                    label: `${wb.asset_location} — ${wb.category}`,
+                    subLabel: `${formatCurrency(Number(wb.rent_price_index ?? 0))}/m²`
+                  }))}
+                  onChange={setSelectedBuildingValueId}
+                />
+                <CustomSelect
+                  label="Entitas penyewa (FP1)"
+                  value={selectedBuildingEntityFactorId}
+                  placeholder="— Pilih Entitas —"
+                  options={buildingEntityFactorRows.map((f) => ({
+                    value: f.id,
+                    label: f.entity_type,
+                    subLabel: `${f.category} (${Number(f.percentage)}%)`
+                  }))}
+                  onChange={(v) => {
+                    const id = v;
+                    setSelectedBuildingEntityFactorId(id);
+                    const row = buildingEntityFactorRows.find((r) => r.id === id);
+                    if (row) setTenantCategory(categoryStringToTenantCategory(row.category));
+                  }}
+                />
+                <CustomSelect
+                  label="Lokasi aset (FP2)"
+                  value={selectedLocationFactorId}
+                  options={(master?.location_adjustment_factors || []).map((l) => ({
+                    value: l.id,
+                    label: l.location,
+                    subLabel: `${l.percentage}%`
+                  }))}
+                  onChange={setSelectedLocationFactorId}
+                />
               </div>
 
               <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-6 shadow-sm dark:border-brand-900/40 dark:from-brand-950/20 dark:to-gray-900">
@@ -343,8 +320,8 @@ export function CostingSection({
               <div className="space-y-3">
                 {overheads.map((item, idx) => (
                   <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_140px_auto]">
-                    <input value={item.name} onChange={(e) => onChangeOverhead(idx, "name", e.target.value)} placeholder="Nama biaya overhead (cth: Kebersihan, Listrik)" className="h-11 rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800" />
-                    <input type="number" value={item.amount} onChange={(e) => onChangeOverhead(idx, "amount", e.target.value)} placeholder="Rp 0" className="h-11 rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800" />
+                    <input value={item.name} onChange={(e) => onChangeOverhead(idx, "name", e.target.value)} placeholder="Nama biaya overhead (cth: Kebersihan, Listrik)" className="h-11 rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                    <input type="number" value={item.amount} onChange={(e) => onChangeOverhead(idx, "amount", e.target.value)} placeholder="Rp 0" onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                     <button type="button" onClick={() => onRemoveOverhead(idx)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-error-200 bg-white text-error-600 hover:bg-error-50 dark:border-error-800 dark:bg-gray-900 dark:hover:bg-error-950/30" aria-label="Hapus baris">
                       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

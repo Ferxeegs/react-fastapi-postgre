@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Select } from "../../components/ui/Select";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import { hppAPI } from "../../utils/api";
@@ -151,10 +152,15 @@ export default function HppSettings() {
               <input placeholder="Code" value={buildingForm.code} onChange={(e) => setBuildingForm({ ...buildingForm, code: e.target.value })} className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600" />
               <input type="number" placeholder="No" value={buildingForm.sequence_no} onChange={(e) => setBuildingForm({ ...buildingForm, sequence_no: Number(e.target.value) })} className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600" />
               <input placeholder="Lokasi Bangunan" value={buildingForm.building_location} onChange={(e) => setBuildingForm({ ...buildingForm, building_location: e.target.value })} className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600" />
-              <select value={buildingForm.building_category} onChange={(e) => setBuildingForm({ ...buildingForm, building_category: e.target.value as any })} className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600">
-                <option value="sederhana">Sederhana</option>
-                <option value="tidak_sederhana">Tidak sederhana</option>
-              </select>
+              <Select
+                value={buildingForm.building_category}
+                options={[
+                  { value: "sederhana", label: "Sederhana" },
+                  { value: "tidak_sederhana", label: "Tidak sederhana" },
+                ]}
+                onChange={(v) => setBuildingForm({ ...buildingForm, building_category: v })}
+                className="col-span-1"
+              />
               <input type="number" placeholder="Indeks/m2" value={buildingForm.price_index_per_m2} onChange={(e) => setBuildingForm({ ...buildingForm, price_index_per_m2: Number(e.target.value) })} className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600" />
             </div>
           }

@@ -2,6 +2,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import { hppAPI } from "../../utils/api";
 import { useTheme } from "../../context/ThemeContext";
+import { useToast } from "../../context/ToastContext";
 import {
   buildCalculationSnapshot,
   computeCosting,
@@ -39,6 +40,7 @@ export default function PublicHppCalculator({
   embeddedAdmin?: boolean;
 }) {
   const { theme, toggleTheme } = useTheme();
+  const { success, error: showError } = useToast();
   const [loadingMaster, setLoadingMaster] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -377,6 +379,7 @@ export default function PublicHppCalculator({
     setResult(computed);
     if (saveSimulation) {
       setSaveNotice("Perhitungan tersimpan sementara di browser. Fitur simpan ke backend belum tersedia.");
+      success("Snapshot kalkulasi berhasil disimpan di browser sementara.");
     }
     setSubmitting(false);
   };
@@ -1315,7 +1318,7 @@ function WizardStepper({
               </div>
               <div className="min-w-0">
                 <p className={`text-sm font-semibold leading-tight ${active ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400"}`}>{s.title}</p>
-                <p className="mt-0.5 line-clamp-2 text-xs text-gray-500 dark:text-gray-500">{s.subtitle}</p>
+                <p className="mt-0.5 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">{s.subtitle}</p>
               </div>
             </div>
           );
@@ -1344,7 +1347,7 @@ function Field({
   return (
     <div>
       <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">{label}</p>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800" />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
     </div>
   );
 }
@@ -1368,7 +1371,7 @@ function SegmentButton({
       className={`h-12 rounded-lg border text-sm font-semibold transition ${
         active
           ? "border-brand-500 bg-brand-500 text-white"
-          : "border-gray-300 bg-white text-gray-700 hover:border-brand-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+          : "border-gray-300 bg-white text-gray-700 hover:border-brand-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
       } disabled:cursor-not-allowed disabled:opacity-50`}
     >
       {children}

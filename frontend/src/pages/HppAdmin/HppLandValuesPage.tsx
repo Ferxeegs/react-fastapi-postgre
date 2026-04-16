@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../compon
 import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
+import { useToast } from "../../context/ToastContext";
 
 export default function HppLandValuesPage() {
   const [rows, setRows] = useState<any[]>([]);
@@ -13,6 +14,7 @@ export default function HppLandValuesPage() {
   const [form, setForm] = useState({ asset_location: "", road_name: "", appraised_value: 0 });
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
+  const { success, error: showError } = useToast();
   const filteredRows = rows.filter((item) =>
     `${item.asset_location} ${item.road_name}`.toLowerCase().includes(search.toLowerCase())
   );
@@ -102,8 +104,13 @@ export default function HppLandValuesPage() {
                           title="Hapus"
                           onClick={async () => {
                             if (!window.confirm("Hapus data WT ini?")) return;
-                            await hppAPI.deleteAdminLandValue(r.id);
-                            load();
+                            try {
+                              await hppAPI.deleteAdminLandValue(r.id);
+                              success("Nilai wajar tanah berhasil dihapus!");
+                              load();
+                            } catch (err: any) {
+                              showError(err.message || "Gagal menghapus nilai wajar tanah.");
+                            }
                           }}
                         >
                           <TrashBinIcon className="size-4" />
@@ -145,14 +152,20 @@ export default function HppLandValuesPage() {
           <button 
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
-              if (editingId) {
-                await hppAPI.updateAdminLandValue(editingId, form);
-              } else {
-                await hppAPI.createAdminLandValue(form);
+              try {
+                if (editingId) {
+                  await hppAPI.updateAdminLandValue(editingId, form);
+                  success("Nilai wajar tanah berhasil diperbarui!");
+                } else {
+                  await hppAPI.createAdminLandValue(form);
+                  success("Nilai wajar tanah berhasil ditambahkan!");
+                }
+                closeModal();
+                resetForm();
+                load();
+              } catch (err: any) {
+                showError(err.message || "Gagal menyimpan nilai wajar tanah.");
               }
-              closeModal();
-              resetForm();
-              load();
             }}
           >
             {editingId ? "Simpan Perubahan" : "Tambah WT"}
