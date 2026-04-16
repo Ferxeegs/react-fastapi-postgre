@@ -8,7 +8,7 @@ import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
 
-export default function HppLocationFactorsPage() {
+export default function HppLocationFactorsPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ location: "", percentage: 100 });
@@ -32,8 +32,8 @@ export default function HppLocationFactorsPage() {
 
   return (
     <>
-      <PageMeta title="FP2 Lokasi" description="Kelola Faktor Penyesuaian Lokasi" />
-      <PageBreadcrumb pageTitle="Faktor Penyesuaian Lokasi (FP2)" />
+      {!embedded && <PageMeta title="FP2 Lokasi" description="Kelola Faktor Penyesuaian Lokasi" />}
+      {!embedded && <PageBreadcrumb pageTitle="Faktor Penyesuaian Lokasi (FP2)" />}
       <div className="space-y-4">
         <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">

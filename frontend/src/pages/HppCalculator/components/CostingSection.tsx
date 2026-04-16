@@ -7,7 +7,7 @@ import type {
   PeriodType,
   TenantCategory,
 } from "../calculatorTypes";
-import { categoryStringToTenantCategory, formatEntityFactorOptionLabel } from "../entityFactorLabels";
+import { categoryStringToTenantCategory } from "../entityFactorLabels";
 import { CustomSelect, Field, SegmentButton, WizardStepper } from "./SharedUi";
 
 export function CostingSection({

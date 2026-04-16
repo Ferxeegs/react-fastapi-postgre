@@ -8,7 +8,7 @@ import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
 
-export default function HppPaymentFactorsPage() {
+export default function HppPaymentFactorsPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ lease_term: "", rate: 0, description: "" });
@@ -32,8 +32,8 @@ export default function HppPaymentFactorsPage() {
 
   return (
     <>
-      <PageMeta title="Payment Adjustment Factors" description="Kelola faktor penyesuaian pembayaran" />
-      <PageBreadcrumb pageTitle="Faktor Penyesuaian Pembayaran" />
+      {!embedded && <PageMeta title="Payment Adjustment Factors" description="Kelola faktor penyesuaian pembayaran" />}
+      {!embedded && <PageBreadcrumb pageTitle="Faktor Penyesuaian Pembayaran" />}
       <div className="space-y-4">
         <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">

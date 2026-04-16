@@ -8,7 +8,7 @@ import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
 
-export default function HppPeriodFactorsPage() {
+export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ period_duration: "", min_year: 1, max_year: 5, percentage: 0 });
@@ -32,8 +32,8 @@ export default function HppPeriodFactorsPage() {
 
   return (
     <>
-      <PageMeta title="Period Adjustment Factors" description="Kelola faktor penyesuaian periode" />
-      <PageBreadcrumb pageTitle="Faktor Penyesuaian Periode" />
+      {!embedded && <PageMeta title="Period Adjustment Factors" description="Kelola faktor penyesuaian periode" />}
+      {!embedded && <PageBreadcrumb pageTitle="Faktor Penyesuaian Periode" />}
       <div className="space-y-4">
         <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">

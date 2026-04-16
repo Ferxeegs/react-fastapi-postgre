@@ -40,7 +40,7 @@ export default function PublicHppCalculator({
   embeddedAdmin?: boolean;
 }) {
   const { theme, toggleTheme } = useTheme();
-  const { success, error: showError } = useToast();
+  const { success } = useToast();
   const [loadingMaster, setLoadingMaster] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

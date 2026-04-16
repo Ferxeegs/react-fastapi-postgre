@@ -4,7 +4,6 @@ import { Link, useLocation } from "react-router";
 // Assume these icons are imported from an icon library
 import {
   ChevronDownIcon,
-  DollarLineIcon,
   GridIcon,
   HorizontaLDots,
   LockIcon,
@@ -12,11 +11,7 @@ import {
   UserIcon,
   TaskIcon,
   DormitoryIcon,
-  BoxCubeIcon,
   GroupIcon,
-  PaperPlaneIcon,
-  CalenderIcon,
-  TableIcon,
   PieChartIcon,
   CalculatorIcon,
 } from "../icons";
@@ -54,7 +49,7 @@ const sidebarGroups: NavGroup[] = [
       },
       {
         icon: <CalculatorIcon />,
-        name: "Kalkulator HPP",
+        name: "HPP Calculator",
         path: "/hpp/calculator",
         requiredPermission: ["view_setting"],
       },
@@ -65,68 +60,44 @@ const sidebarGroups: NavGroup[] = [
     items: [
       {
         icon: <TaskIcon />,
-        name: "Variabel Sewa (VT/VB)",
+        name: "Rental Variables (VT/VB)",
         path: "/hpp/settings/variables",
         requiredPermission: ["view_setting"],
       },
       {
         icon: <DormitoryIcon />,
-        name: "Nilai Wajar Tanah (WT)",
-        path: "/hpp/settings/land-values",
-        requiredPermission: ["view_setting"],
-      },
-      {
-        icon: <BoxCubeIcon />,
-        name: "Nilai Wajar Bangunan (WB)",
-        path: "/hpp/settings/building-values",
+        name: "Fair Values (WT/WB)",
+        path: "/hpp/settings/fair-values",
         requiredPermission: ["view_setting"],
       },
       {
         icon: <GroupIcon />,
-        name: "Entity Factors (FP1)",
-        path: "/hpp/settings/entity-factors",
-        requiredPermission: ["view_setting"],
-      },
-      {
-        icon: <PaperPlaneIcon />,
-        name: "Location Factors (FP2)",
-        path: "/hpp/settings/location-factors",
-        requiredPermission: ["view_setting"],
-      },
-      {
-        icon: <CalenderIcon />,
-        name: "Period Factors (FP3)",
-        path: "/hpp/settings/period-factors",
-        requiredPermission: ["view_setting"],
-      },
-      {
-        icon: <TableIcon />,
-        name: "Payment Factors (FP4)",
-        path: "/hpp/settings/payment-factors",
+        name: "Adjustment Factors (FP1-FP4)",
+        path: "/hpp/settings/adjustment-factors",
         requiredPermission: ["view_setting"],
       },
       {
         icon: <PieChartIcon />,
-        name: "Pajak & Margin",
+        name: "Taxes & Margin",
         path: "/hpp/settings/taxes-margin",
         requiredPermission: ["view_setting"],
       },
     ],
   },
   {
-    title: "Sistem & Keamanan",
+    title: "System & Security",
     items: [
       {
         icon: <LockIcon />,
-        name: "Akses",
+        name: "Access",
         subItems: [
           {
-            name: "Pengguna",
+            name: "Users",
             path: "/users",
             requiredPermission: ["view_user"],
           },
           {
-            name: "Peran",
+            name: "Roles",
             path: "/roles",
             requiredPermission: ["view_role"],
           },
@@ -134,18 +105,13 @@ const sidebarGroups: NavGroup[] = [
       },
       {
         icon: <SettingsIcon />,
-        name: "Pengaturan",
-        subItems: [
-          {
-            name: "General Settings",
-            path: "/settings",
-            requiredPermission: ["view_setting"],
-          },
-        ],
+        name: "Site Settings",
+        path: "/settings",
+        requiredPermission: ["view_setting"],
       },
       {
         icon: <UserIcon />,
-        name: "Profil Saya",
+        name: "My Profile",
         path: "/profile",
         requiredPermission: ["view_myprofile"],
       },

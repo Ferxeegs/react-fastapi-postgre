@@ -8,7 +8,7 @@ import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
 
-export default function HppEntityFactorsPage() {
+export default function HppEntityFactorsPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ entity_type: "", category: "", percentage: 0 });
@@ -32,8 +32,8 @@ export default function HppEntityFactorsPage() {
 
   return (
     <>
-      <PageMeta title="Entity Adjustment Factors" description="Kelola faktor penyesuaian entitas" />
-      <PageBreadcrumb pageTitle="Faktor Penyesuaian Entitas" />
+      {!embedded && <PageMeta title="Entity Adjustment Factors" description="Kelola faktor penyesuaian entitas" />}
+      {!embedded && <PageBreadcrumb pageTitle="Faktor Penyesuaian Entitas" />}
       <div className="space-y-4">
         <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">

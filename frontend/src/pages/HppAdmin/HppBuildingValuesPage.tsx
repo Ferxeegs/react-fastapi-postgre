@@ -9,7 +9,7 @@ import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
 
-export default function HppBuildingValuesPage() {
+export default function HppBuildingValuesPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
@@ -37,8 +37,8 @@ export default function HppBuildingValuesPage() {
 
   return (
     <>
-      <PageMeta title="Master WB" description="Kelola Nilai Wajar Bangunan" />
-      <PageBreadcrumb pageTitle="Nilai Wajar Bangunan (WB)" />
+      {!embedded && <PageMeta title="Master WB" description="Kelola Nilai Wajar Bangunan" />}
+      {!embedded && <PageBreadcrumb pageTitle="Nilai Wajar Bangunan (WB)" />}
       <div className="space-y-4">
         <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">
@@ -72,7 +72,7 @@ export default function HppBuildingValuesPage() {
             <Table className="w-full text-left border-collapse">
               <TableHeader className="border-b border-gray-200 bg-gray-50/50 dark:border-gray-800 dark:bg-white/[0.02]">
                 <TableRow>
-                  {["No.", "Lokasi Aset", "Kategori", "Indeks Harga Sewa", "Aksi"].map((h) => (
+                  {["No.", "Lokasi Aset", "Kategori", "Indeks Harga Sewa (Rp/m²)", "Aksi"].map((h) => (
                     <TableCell key={h} isHeader className="px-6 py-3.5 text-left text-[12px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">{h}</TableCell>
                   ))}
                 </TableRow>
