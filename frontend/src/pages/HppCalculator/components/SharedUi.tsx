@@ -9,27 +9,33 @@ export function WizardStepper({
 }) {
   const pct = steps.length > 1 ? ((currentStep - 1) / (steps.length - 1)) * 100 : 100;
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
         {steps.map((s) => {
           const done = currentStep > s.id;
           const active = currentStep === s.id;
           return (
-            <div key={s.id} className="flex min-w-0 items-start gap-2">
+            <div key={s.id} className="relative flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:items-center">
               <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ${
                   done
-                    ? "bg-brand-500 text-white"
+                    ? "bg-brand-500 text-white shadow-md shadow-brand-500/20"
                     : active
-                      ? "bg-brand-100 text-brand-800 ring-2 ring-brand-500 dark:bg-brand-900/50 dark:text-brand-200"
-                      : "border border-gray-200 bg-gray-100 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                      ? "bg-brand-50 text-brand-700 ring-2 ring-brand-500 shadow-sm dark:bg-brand-900/50 dark:text-brand-200"
+                      : "border border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-500"
                 }`}
               >
-                {done ? "✓" : s.id}
+                {done ? (
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  s.id
+                )}
               </div>
-              <div className="min-w-0">
-                <p className={`text-sm font-semibold leading-tight ${active ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400"}`}>{s.title}</p>
-                <p className="mt-0.5 line-clamp-2 text-xs text-gray-500 dark:text-gray-500">{s.subtitle}</p>
+              <div className="min-w-0 flex-1">
+                <p className={`text-sm font-bold leading-tight tracking-tight ${active ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>{s.title}</p>
+                <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-gray-400 dark:text-gray-500">{s.subtitle}</p>
               </div>
             </div>
           );
@@ -57,8 +63,14 @@ export function Field({
 }) {
   return (
     <div>
-      <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">{label}</p>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800" />
+      <p className="mb-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300">{label}</p>
+      <input 
+        type={type} 
+        value={value} 
+        onChange={(e) => onChange(e.target.value)} 
+        placeholder={placeholder} 
+        className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10 transition-shadow dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500 dark:focus:ring-brand-500/20" 
+      />
     </div>
   );
 }
@@ -79,10 +91,10 @@ export function SegmentButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`h-12 rounded-lg border text-sm font-semibold transition ${
+      className={`h-11 rounded-lg text-sm font-semibold transition-all ${
         active
-          ? "border-brand-500 bg-brand-500 text-white"
-          : "border-gray-300 bg-white text-gray-700 hover:border-brand-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+          ? "bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-500 shadow-sm dark:bg-brand-500/20 dark:text-brand-300"
+          : "border border-gray-200 bg-white text-gray-700 shadow-theme-xs hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-800/80"
       } disabled:cursor-not-allowed disabled:opacity-50`}
     >
       {children}

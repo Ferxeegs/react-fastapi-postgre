@@ -52,14 +52,17 @@ export function PricingSection({
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <div className="flex flex-col gap-4 border-b border-gray-100 p-6 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 p-8 text-white shadow-lg shadow-brand-500/20">
+        <div className="absolute -right-4 -top-4 opacity-10 blur-xl">
+          <div className="h-40 w-40 rounded-full bg-white"></div>
+        </div>
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">HPP tahunan (basis)</p>
-            <p className="mt-1 text-3xl font-bold text-brand-600">{formatCurrency(selectedHpp)}</p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Dasar perhitungan tarif bruto dan simulasi pajak.</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-white/80">HPP tahunan (basis)</p>
+            <p className="mt-2 text-4xl font-black tracking-tight">{formatCurrency(selectedHpp)}</p>
+            <p className="mt-2 text-xs text-white/90">Dasar perhitungan tarif bruto dan simulasi pajak.</p>
           </div>
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-2xl dark:bg-brand-950/40">🏢</div>
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-3xl backdrop-blur-sm shadow-sm ring-1 ring-white/30">🏢</div>
         </div>
       </div>
 
@@ -140,14 +143,14 @@ export function PricingSection({
                 min={0}
                 value={simulatedGrossStr}
                 onChange={(e) => setSimulatedGrossStr(e.target.value)}
-                className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm dark:border-gray-700 dark:bg-gray-800"
+                className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10 transition-shadow dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500 dark:focus:ring-brand-500/20"
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Gunakan nilai rekomendasi, pembulatan, atau nominal lain untuk uji coba.</p>
             </div>
             <button
               type="button"
               onClick={() => setSimulatedGrossStr(String(pricingRecommended.grossRounded))}
-              className="h-11 shrink-0 rounded-lg border border-brand-300 px-4 text-sm font-semibold text-brand-700 dark:text-brand-300"
+              className="h-11 shrink-0 rounded-lg border border-brand-200 bg-brand-50 px-4 text-sm font-semibold text-brand-700 transition hover:bg-brand-100 dark:border-brand-800 dark:bg-brand-900/40 dark:text-brand-300 dark:hover:bg-brand-900/60"
             >
               Gunakan rekomendasi
             </button>

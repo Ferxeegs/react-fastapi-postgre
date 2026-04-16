@@ -1250,16 +1250,18 @@ export default function PublicHppCalculator({
             </>
           )}
         </div>
-            <div className="sticky bottom-0 mt-6 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-lg dark:border-gray-800 dark:bg-gray-900">
-          <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
-            <FooterStat label="Sewa tanah" value={formatCurrency(result?.total_land_rent_yearly ?? costingCore.totalLandRentYearly)} />
-            <FooterStat label="Sewa bangunan" value={formatCurrency(result?.total_building_rent_yearly ?? costingCore.totalBuildingRentYearly)} />
-            <FooterStat label="Overhead" value={formatCurrency(result?.total_overhead ?? costingCore.overheadTotal)} />
-            <FooterStat
-              label={mainPhase === "pricing" ? "HPP sewa (ref.)" : "HPP sewa"}
-              value={`${formatCurrency(result?.selected_hpp ?? costingCore.selectedHpp)}${periodType === "year" ? "/tahun" : ""}`}
-              strong
-            />
+        <div className="sticky bottom-4 z-40 mx-4 mt-6 rounded-2xl border border-gray-200/80 bg-white/90 p-4 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/90 dark:shadow-[0_-8px_30px_rgb(0,0,0,0.4)]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4 md:grid-cols-none">
+              <FooterStat label="Sewa tanah" value={formatCurrency(result?.total_land_rent_yearly ?? costingCore.totalLandRentYearly)} />
+              <FooterStat label="Sewa bangunan" value={formatCurrency(result?.total_building_rent_yearly ?? costingCore.totalBuildingRentYearly)} />
+              <FooterStat label="Overhead" value={formatCurrency(result?.total_overhead ?? costingCore.overheadTotal)} />
+              <FooterStat
+                label={mainPhase === "pricing" ? "HPP sewa (ref.)" : "HPP sewa"}
+                value={`${formatCurrency(result?.selected_hpp ?? costingCore.selectedHpp)}${periodType === "year" ? "/Tahun" : ""}`}
+                strong
+              />
+            </div>
             <button
               type="button"
               onClick={() => {
@@ -1273,9 +1275,9 @@ export default function PublicHppCalculator({
                 setLandArea(0);
                 setBuildingArea(0);
               }}
-              className="rounded-lg bg-brand-500 px-3 py-2 text-xs font-semibold text-white hover:bg-brand-600 sm:text-sm"
+              className="mt-2 w-full sm:mt-0 sm:w-auto shrink-0 rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
-              Reset
+              Reset Kalkulator
             </button>
           </div>
         </div>
@@ -1376,9 +1378,9 @@ function SegmentButton({
 
 function FooterStat({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className="rounded-lg border border-gray-100 px-3 py-2 dark:border-gray-800">
-      <p className="text-[11px] uppercase text-gray-500">{label}</p>
-      <p className={`mt-1 ${strong ? "text-lg font-bold text-brand-600" : "text-sm font-semibold text-gray-900 dark:text-white"}`}>{value}</p>
+    <div className={`flex flex-col rounded-xl px-4 py-2 ring-1 ring-inset ${strong ? "bg-brand-50/50 ring-brand-200 dark:bg-brand-900/20 dark:ring-brand-800" : "bg-gray-50/50 ring-gray-200 dark:bg-gray-800/50 dark:ring-gray-700"}`}>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{label}</p>
+      <p className={`mt-0.5 ${strong ? "text-base font-bold text-brand-600 dark:text-brand-400" : "text-sm font-semibold text-gray-900 dark:text-gray-100"}`}>{value}</p>
     </div>
   );
 }

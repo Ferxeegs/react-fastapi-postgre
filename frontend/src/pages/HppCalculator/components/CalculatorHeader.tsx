@@ -34,14 +34,14 @@ export function CalculatorHeader({
               ? "Susun komponen biaya sewa hingga ringkasan HPP sebelum menentukan tarif dan pajak."
               : "Tentukan tarif sewa bruto berdasarkan HPP referensi dan struktur pajak yang dipilih; sesuaikan nominal bila perlu."}
           </p>
-          <div className="mt-4 inline-flex rounded-xl border border-gray-200 p-1 dark:border-gray-700">
+          <div className="mt-5 inline-flex rounded-xl border border-gray-200 bg-gray-50/50 p-1.5 dark:border-gray-800 dark:bg-gray-900/50">
             <button
               type="button"
               onClick={() => setMainPhase("costing")}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+              className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition-all ${
                 mainPhase === "costing"
-                  ? "bg-brand-500 text-white shadow-sm"
-                  : "text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                  ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:text-white dark:ring-white/10"
+                  : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
             >
               Analisa biaya
@@ -58,10 +58,10 @@ export function CalculatorHeader({
                 setSimulatedGrossStr(String(roundedGross));
                 setMainPhase("pricing");
               }}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+              className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition-all ${
                 mainPhase === "pricing"
-                  ? "bg-brand-500 text-white shadow-sm"
-                  : "text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                  ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:text-white dark:ring-white/10"
+                  : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
             >
               Analisa harga

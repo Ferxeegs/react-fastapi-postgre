@@ -234,16 +234,23 @@ export function CostingSection({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-blue-light-200 bg-blue-light-25/90 p-5 dark:border-blue-light-800/40 dark:bg-blue-light-950/20">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Nilai sewa tanah (dasar tahunan)</p>
-                <p className="mt-2 text-3xl font-bold text-brand-600">{formatCurrency(previewLandBase)}</p>
-                <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                  Belum memakai FP3 dan FP4; penyesuaian periode & pembayaran diatur pada langkah HPP sewa.
-                </p>
-                <p className="mt-3 font-mono text-[11px] leading-relaxed text-gray-600 dark:text-gray-400">
-                  {landArea} m² × VT({rentalVarLand}%) × WT(
-                  {Number(selectedLandValue?.appraised_value ?? 0).toLocaleString("id-ID")}) × FP1({fp1LandPct}%) × FP2({fp2Pct}%)
-                </p>
+              <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-6 shadow-sm dark:border-brand-900/40 dark:from-brand-950/20 dark:to-gray-900">
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-100 text-brand-600 dark:bg-brand-900/50 dark:text-brand-300"><span className="text-sm">🌿</span></div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Nilai sewa tanah (dasar tahunan)</p>
+                  </div>
+                  <p className="mt-3 text-4xl font-black text-brand-600 tracking-tight">{formatCurrency(previewLandBase)}</p>
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Belum termasuk penyesuaian periode & opsi pembayaran (FP3 & FP4).
+                  </p>
+                  <div className="mt-4 rounded-lg bg-white/60 p-3 backdrop-blur-sm border border-brand-200/50 dark:bg-gray-900/50 dark:border-gray-800">
+                    <p className="font-mono text-[11px] leading-relaxed text-gray-600 dark:text-gray-400">
+                      {landArea} m² × VT({rentalVarLand}%) × WT(
+                      {Number(selectedLandValue?.appraised_value ?? 0).toLocaleString("id-ID")}) × FP1({fp1LandPct}%) × FP2({fp2Pct}%)
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -309,16 +316,23 @@ export function CostingSection({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-blue-light-200 bg-blue-light-25/90 p-5 dark:border-blue-light-800/40 dark:bg-blue-light-950/20">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Nilai sewa bangunan (dasar tahunan)</p>
-                <p className="mt-2 text-3xl font-bold text-brand-600">{formatCurrency(previewBuildingBase)}</p>
-                <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                  Belum memakai FP3 dan FP4; penyesuaian periode & pembayaran diatur pada langkah HPP sewa.
-                </p>
-                <p className="mt-3 font-mono text-[11px] leading-relaxed text-gray-600 dark:text-gray-400">
-                  {buildingArea} m² × VB({rentalVarBuilding}%) × WB(
-                  {Number(selectedBuildingValue?.rent_price_index ?? 0).toLocaleString("id-ID")}) × FP1({fp1BuildingPct}%) × FP2({fp2Pct}%)
-                </p>
+              <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-6 shadow-sm dark:border-brand-900/40 dark:from-brand-950/20 dark:to-gray-900">
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-100 text-brand-600 dark:bg-brand-900/50 dark:text-brand-300"><span className="text-sm">🏢</span></div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Nilai sewa bangunan (dasar tahunan)</p>
+                  </div>
+                  <p className="mt-3 text-4xl font-black text-brand-600 tracking-tight">{formatCurrency(previewBuildingBase)}</p>
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Belum termasuk penyesuaian periode & opsi pembayaran (FP3 & FP4).
+                  </p>
+                  <div className="mt-4 rounded-lg bg-white/60 p-3 backdrop-blur-sm border border-brand-200/50 dark:bg-gray-900/50 dark:border-gray-800">
+                    <p className="font-mono text-[11px] leading-relaxed text-gray-600 dark:text-gray-400">
+                      {buildingArea} m² × VB({rentalVarBuilding}%) × WB(
+                      {Number(selectedBuildingValue?.rent_price_index ?? 0).toLocaleString("id-ID")}) × FP1({fp1BuildingPct}%) × FP2({fp2Pct}%)
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -342,9 +356,9 @@ export function CostingSection({
               <button type="button" onClick={onAddOverhead} className="inline-flex items-center gap-2 rounded-lg border border-brand-300 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-800 hover:bg-brand-100 dark:border-brand-700 dark:bg-brand-950/40 dark:text-brand-200 dark:hover:bg-brand-900/50">
                 <span className="text-lg leading-none">+</span> Tambah biaya overhead
               </button>
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-700 dark:bg-gray-800/50">
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Total biaya overhead</p>
-                <p className="mt-2 text-3xl font-bold text-brand-600">{formatCurrency(overheadTotal)}</p>
+                <p className="mt-2 text-4xl font-black text-brand-600 tracking-tight">{formatCurrency(overheadTotal)}</p>
               </div>
             </div>
           )}
@@ -425,21 +439,30 @@ export function CostingSection({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-blue-light-200 bg-blue-light-25/80 p-4 dark:border-blue-light-900/40 dark:bg-blue-light-950/20">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-blue-light-800 dark:text-blue-light-300">Margin fee</p>
+              <div className="rounded-2xl border border-brand-100 bg-brand-50/50 p-5 shadow-sm dark:border-brand-900/30 dark:bg-brand-950/20">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-brand-800 dark:text-brand-300">Margin fee</p>
                 <p className="mt-1 text-2xl font-bold text-brand-600">{Number(marginFee).toFixed(2)}%</p>
-                <p className="mt-1 text-xs text-blue-light-700 dark:text-blue-light-300">Diambil otomatis dari tabel `margin_fees`.</p>
+                <p className="mt-1 text-xs text-brand-700 dark:text-brand-400">Diambil otomatis dari tabel master data.</p>
               </div>
 
-              <div className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 p-5 text-white shadow-md">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-white/80">HPP sewa tahunan (basis)</p>
-                <p className="mt-2 text-3xl font-bold">{formatCurrency(costingCore.hpptWithMargin)}</p>
-                <p className="mt-2 text-xs text-white/85">(Tanah + Bangunan + Overhead) × (1 + Margin%)</p>
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 p-8 text-white shadow-lg shadow-brand-500/20">
+                <div className="absolute -right-4 -top-4 opacity-10 blur-xl">
+                  <div className="h-40 w-40 rounded-full bg-white"></div>
+                </div>
+                <div className="relative z-10">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-white/80">HPP sewa tahunan (basis)</p>
+                  <p className="mt-2 text-4xl font-black tracking-tight">{formatCurrency(costingCore.hpptWithMargin)}</p>
+                  <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-white/90">
+                    <span className="opacity-80">(Tanah + Bangunan + Overhead) × (1 + Margin%)</span>
+                  </p>
+                </div>
               </div>
 
-              <div className="rounded-xl border-2 border-brand-200 bg-brand-50/50 p-4 dark:border-brand-800 dark:bg-brand-950/30">
-                <p className="text-sm font-semibold text-brand-900 dark:text-brand-100">💰 {hppLunasLabel}</p>
-                <p className="mt-2 text-2xl font-bold text-brand-700 dark:text-brand-300">{formatCurrency(costingCore.selectedHpp)}</p>
+              <div className="rounded-2xl border-2 border-brand-200 bg-brand-50/50 p-6 dark:border-brand-800 dark:bg-brand-950/30">
+                <p className="text-sm font-semibold text-brand-900 dark:text-brand-100 flex items-center gap-2">
+                  <span>💰</span> {hppLunasLabel}
+                </p>
+                <p className="mt-2 text-3xl font-bold text-brand-700 tracking-tight dark:text-brand-300">{formatCurrency(costingCore.selectedHpp)}</p>
                 {periodType === "year" && paymentType === "installment" && (
                   <div className="mt-3 rounded-lg border border-brand-200 bg-white/70 p-3 dark:border-brand-800 dark:bg-gray-900/40">
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">Rincian pembayaran per tahun</p>
