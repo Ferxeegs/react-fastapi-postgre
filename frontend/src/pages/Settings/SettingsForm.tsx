@@ -758,37 +758,6 @@ export default function SettingsForm() {
         </div>
       </ComponentCard>
 
-      {/* Order Settings */}
-      <ComponentCard title="Pengaturan Pesanan" className="mb-6">
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2">
-            <div>
-              <Label>Kuota gratis cuci (item pakaian/siswa/minggu)</Label>
-              <Input
-                type="number"
-                value={settings.order.monthly_quota || ""}
-                onChange={(e) => handleInputChange("order", "monthly_quota", e.target.value)}
-                placeholder="Contoh: 28"
-                disabled={!canUpdateSettings}
-              />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Direset setiap Senin pukul 00:00 WIB. Layanan tambahan (addon) tidak memakai kuota ini.
-              </p>
-            </div>
-            <div>
-              <Label>Harga per item</Label>
-              <Input
-                type="number"
-                value={settings.order.price_per_item || ""}
-                onChange={(e) => handleInputChange("order", "price_per_item", e.target.value)}
-                placeholder="Harga per item"
-                disabled={!canUpdateSettings}
-              />
-            </div>
-          </div>
-        </div>
-      </ComponentCard>
-
       {/* Submit Button */}
       {canUpdateSettings && (
         <div className="flex justify-end">

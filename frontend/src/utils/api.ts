@@ -1131,3 +1131,377 @@ export const settingAPI = {
     });
   },
 };
+
+/**
+ * HPP Calculator API functions
+ */
+export const hppAPI = {
+  getPublicMaster: async () => {
+    return apiRequest<{
+      rental_variables: Array<{
+        id: number;
+        code: string;
+        name: string;
+        asset_type: string;
+        percentage: number;
+      }>;
+      taxes: Array<{
+        id: number;
+        code: string;
+        tax_name: string;
+        tax_rate_pct: number;
+        coverage_pct: number;
+      }>;
+      margin_fee?: {
+        id: number;
+        percentage: number;
+        effective_date: string;
+      } | null;
+      rental_period_factors: Array<{
+        id: number;
+        code: string;
+        period_type: "year" | "month" | "day" | "hour";
+        label: string;
+        percentage: number;
+        is_default: boolean;
+      }>;
+      payment_lumpsum_factors: Array<{
+        id: number;
+        code: string;
+        rental_year: number;
+        label: string;
+        percentage: number;
+        is_default: boolean;
+      }>;
+      payment_installment_factors: Array<{
+        id: number;
+        code: string;
+        rental_year: number;
+        label: string;
+        percentage: number;
+      }>;
+    }>("/hpp/master/public", {
+      method: "GET",
+    });
+  },
+
+  calculate: async (payload: {
+    partner_name: string;
+    location_point: string;
+    land_area_m2: number;
+    building_area_m2: number;
+    rental_variable_land_pct: number;
+    rental_variable_building_pct: number;
+    fair_land_price_per_m2: number;
+    fair_building_price_per_m2: number;
+    fp1_land_multiplier: number;
+    fp1_building_multiplier: number;
+    fp2_multiplier: number;
+    fp3_multiplier: number;
+    fp4_multiplier: number;
+    margin_fee_pct: number;
+    overhead_items: Array<{ name: string; amount: number }>;
+    selected_period_type: "year" | "month" | "day" | "hour";
+    selected_payment_type: "lumpsum" | "installment";
+    rental_duration_years?: number;
+    selected_tax_codes: string[];
+    save_simulation?: boolean;
+  }) => {
+    return apiRequest<{
+      total_land_rent_yearly: number;
+      total_building_rent_yearly: number;
+      total_overhead: number;
+      hpp_base_yearly: number;
+      selected_hpp: number;
+      gross_recommended: number;
+      gross_recommended_rounded: number;
+      total_tax: number;
+      net_amount: number;
+      is_feasible: boolean;
+      taxes: Array<{ code: string; name: string; dpp: number; amount: number }>;
+      simulation_id?: number;
+      simulation_reference_no?: string;
+    }>("/hpp/calculate", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  getAdminRentalVariables: async () => {
+    return apiRequest<Array<{
+      id: number;
+      name: string;
+      value: number;
+      created_at?: string;
+      updated_at?: string;
+    }>>("/hpp/admin/rent-variables", { method: "GET" });
+  },
+
+  updateRentalVariable: async (idOrCode: number | string, payload: any) => {
+    const id = Number(idOrCode);
+    const normalizedPayload: { value?: number; name?: string } = {
+      value: payload.value ?? payload.percentage,
+      name: payload.name,
+    };
+    return apiRequest(`/hpp/admin/rent-variables/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(normalizedPayload),
+    });
+  },
+
+  createRentalVariable: async (payload: { name: string; value: number }) => {
+    return apiRequest("/hpp/admin/rent-variables", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteRentalVariable: async (id: number) => {
+    return apiRequest(`/hpp/admin/rent-variables/${id}`, { method: "DELETE" });
+  },
+
+  getAdminLandValues: async () => {
+    return apiRequest<Array<any>>("/hpp/admin/fair-land-values", { method: "GET" });
+  },
+
+  createAdminLandValue: async (payload: {
+    asset_location?: string;
+    road_name?: string;
+    appraised_value?: number;
+    land_location?: string;
+    street_name?: string;
+    estimated_price_per_m2?: number;
+  }) => {
+    const normalizedPayload = {
+      asset_location: payload.asset_location ?? payload.land_location ?? "",
+      road_name: payload.road_name ?? payload.street_name ?? "",
+      appraised_value: payload.appraised_value ?? payload.estimated_price_per_m2 ?? 0,
+    };
+    return apiRequest("/hpp/admin/fair-land-values", {
+      method: "POST",
+      body: JSON.stringify(normalizedPayload),
+    });
+  },
+  updateAdminLandValue: async (id: number, payload: { asset_location: string; road_name: string; appraised_value: number }) => {
+    return apiRequest(`/hpp/admin/fair-land-values/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteAdminLandValue: async (id: number) => {
+    return apiRequest(`/hpp/admin/fair-land-values/${id}`, { method: "DELETE" });
+  },
+
+  getAdminBuildingValues: async () => {
+    return apiRequest<Array<any>>("/hpp/admin/fair-building-values", { method: "GET" });
+  },
+
+  createAdminBuildingValue: async (payload: {
+    asset_location?: string;
+    category?: string;
+    rent_price_index?: number;
+    building_location?: string;
+    building_category?: string;
+    price_index_per_m2?: number;
+  }) => {
+    const normalizedPayload = {
+      asset_location: payload.asset_location ?? payload.building_location ?? "",
+      category: payload.category ?? payload.building_category ?? "",
+      rent_price_index: payload.rent_price_index ?? payload.price_index_per_m2 ?? 0,
+    };
+    return apiRequest("/hpp/admin/fair-building-values", {
+      method: "POST",
+      body: JSON.stringify(normalizedPayload),
+    });
+  },
+  updateAdminBuildingValue: async (id: number, payload: { asset_location: string; category: string; rent_price_index: number }) => {
+    return apiRequest(`/hpp/admin/fair-building-values/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteAdminBuildingValue: async (id: number) => {
+    return apiRequest(`/hpp/admin/fair-building-values/${id}`, { method: "DELETE" });
+  },
+
+  getAdminLocationFactors: async () => {
+    return apiRequest<Array<any>>("/hpp/admin/location-adjustment-factors", { method: "GET" });
+  },
+
+  createAdminLocationFactor: async (payload: {
+    location?: string;
+    percentage: number;
+    location_name?: string;
+  }) => {
+    const normalizedPayload = {
+      location: payload.location ?? payload.location_name ?? "",
+      percentage: payload.percentage,
+    };
+    return apiRequest("/hpp/admin/location-adjustment-factors", {
+      method: "POST",
+      body: JSON.stringify(normalizedPayload),
+    });
+  },
+  updateAdminLocationFactor: async (id: number, payload: { location: string; percentage: number }) => {
+    return apiRequest(`/hpp/admin/location-adjustment-factors/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteAdminLocationFactor: async (id: number) => {
+    return apiRequest(`/hpp/admin/location-adjustment-factors/${id}`, { method: "DELETE" });
+  },
+
+  getAdminEntityFactors: async () => {
+    return apiRequest<Array<any>>("/hpp/admin/entity-adjustment-factors", { method: "GET" });
+  },
+  createAdminEntityFactor: async (payload: { entity_type: string; category: string; percentage: number }) => {
+    return apiRequest("/hpp/admin/entity-adjustment-factors", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  updateAdminEntityFactor: async (id: number, payload: { entity_type: string; category: string; percentage: number }) => {
+    return apiRequest(`/hpp/admin/entity-adjustment-factors/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteAdminEntityFactor: async (id: number) => {
+    return apiRequest(`/hpp/admin/entity-adjustment-factors/${id}`, { method: "DELETE" });
+  },
+
+  getAdminPeriodFactors: async () => {
+    return apiRequest<Array<any>>("/hpp/admin/period-adjustment-factors", { method: "GET" });
+  },
+  createAdminPeriodFactor: async (payload: {
+    period_duration: string;
+    min_year: number;
+    max_year: number;
+    percentage: number;
+  }) => {
+    return apiRequest("/hpp/admin/period-adjustment-factors", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  updateAdminPeriodFactor: async (
+    id: number,
+    payload: Partial<{ period_duration: string; min_year: number; max_year: number; percentage: number }>
+  ) => {
+    return apiRequest(`/hpp/admin/period-adjustment-factors/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteAdminPeriodFactor: async (id: number) => {
+    return apiRequest(`/hpp/admin/period-adjustment-factors/${id}`, { method: "DELETE" });
+  },
+
+  getAdminPaymentFactors: async () => {
+    return apiRequest<Array<any>>("/hpp/admin/payment-adjustment-factors", { method: "GET" });
+  },
+  createAdminPaymentFactor: async (payload: { lease_term: string; rate: number; description?: string }) => {
+    return apiRequest("/hpp/admin/payment-adjustment-factors", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  updateAdminPaymentFactor: async (id: number, payload: { lease_term: string; rate: number; description?: string }) => {
+    return apiRequest(`/hpp/admin/payment-adjustment-factors/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteAdminPaymentFactor: async (id: number) => {
+    return apiRequest(`/hpp/admin/payment-adjustment-factors/${id}`, { method: "DELETE" });
+  },
+
+  getAdminTaxes: async () => {
+    return apiRequest<Array<any>>("/hpp/admin/taxes", { method: "GET" });
+  },
+
+  createAdminTax: async (payload: {
+    name?: string;
+    rate?: number;
+    coverage?: number;
+    description?: string;
+    tax_name?: string;
+    tax_rate_pct?: number;
+    coverage_pct?: number;
+  }) => {
+    const normalizedPayload = {
+      name: payload.name ?? payload.tax_name ?? "",
+      rate: payload.rate ?? payload.tax_rate_pct ?? 0,
+      coverage: payload.coverage ?? payload.coverage_pct ?? 0,
+      description: payload.description,
+    };
+    return apiRequest("/hpp/admin/taxes", {
+      method: "POST",
+      body: JSON.stringify(normalizedPayload),
+    });
+  },
+  updateAdminTax: async (id: number, payload: { name: string; rate: number; coverage: number; description?: string }) => {
+    return apiRequest(`/hpp/admin/taxes/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteAdminTax: async (id: number) => {
+    return apiRequest(`/hpp/admin/taxes/${id}`, { method: "DELETE" });
+  },
+
+  getAdminMarginFee: async () => {
+    const res = await apiRequest<Array<{ id: number; name: string; rate: number }>>(
+      "/hpp/admin/margin-fees",
+      { method: "GET" }
+    );
+    if (!res.success) return res as ApiResponse<any>;
+    const first = (res.data || [])[0];
+    return {
+      success: true,
+      message: res.message,
+      data: first || null,
+    };
+  },
+  getAdminMarginFees: async () => {
+    return apiRequest<Array<{ id: number; name: string; rate: number }>>("/hpp/admin/margin-fees", { method: "GET" });
+  },
+  createAdminMarginFee: async (payload: { name: string; rate: number }) => {
+    return apiRequest("/hpp/admin/margin-fees", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  updateAdminMarginFeeById: async (id: number, payload: { name: string; rate: number }) => {
+    return apiRequest(`/hpp/admin/margin-fees/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+  deleteAdminMarginFee: async (id: number) => {
+    return apiRequest(`/hpp/admin/margin-fees/${id}`, { method: "DELETE" });
+  },
+
+  updateAdminMarginFee: async (rate: number, name = "Default Margin Fee") => {
+    const existing = await apiRequest<Array<{ id: number; name: string; rate: number }>>(
+      "/hpp/admin/margin-fees",
+      { method: "GET" }
+    );
+    if (!existing.success) return existing;
+    const first = (existing.data || [])[0];
+    if (first?.id) {
+      return apiRequest(`/hpp/admin/margin-fees/${first.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ rate, name: first.name || name }),
+      });
+    }
+    return apiRequest("/hpp/admin/margin-fees", {
+      method: "POST",
+      body: JSON.stringify({ name, rate }),
+    });
+  },
+
+  getAdminSimulations: async () => {
+    return apiRequest<Array<any>>("/hpp/simulations", { method: "GET" });
+  },
+};

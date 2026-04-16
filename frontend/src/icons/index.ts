@@ -58,6 +58,7 @@ import { ReactComponent as ErrorHexaIcon } from "./info-hexa.svg?react";
 import { ReactComponent as QrCodeIcon } from "./qr-code.svg?react";
 import { ReactComponent as DormitoryIcon } from "./dormitory.svg?react";
 import { ReactComponent as AddonIcon } from "./addon.svg?react";
+import { ReactComponent as CalculatorIcon } from "./calculator.svg?react";
 
 export {
   SettingsIcon,
@@ -120,4 +121,5 @@ export {
   QrCodeIcon,
   DormitoryIcon,
   AddonIcon,
+  CalculatorIcon,
 };
