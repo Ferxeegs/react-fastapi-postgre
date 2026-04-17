@@ -73,9 +73,17 @@ def init_permissions(db: Session):
         "update_setting",
         "delete_setting",
     ]
-    
+
+    # Permissions untuk HppMaster model
+    hpp_master_permissions = [
+        "view_hpp_calculator",
+        "view_hpp_master",
+        "create_hpp_master",
+        "update_hpp_master",
+        "delete_hpp_master",
+    ]
     # Combine all permissions
-    all_permissions = user_permissions + role_permissions + setting_permissions
+    all_permissions = user_permissions + role_permissions + setting_permissions + hpp_master_permissions
     
     for perm_name in all_permissions:
         existing_perm = db.query(Permission).filter(Permission.name == perm_name).first()

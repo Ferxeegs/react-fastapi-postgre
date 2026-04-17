@@ -8,6 +8,7 @@ import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
 import { blurNormalizeDecimalDraft, blurNormalizeIntDraft, parseDecimalDraft, parseDigitsOnlyDraft } from "./numericFormDraft";
+import { useAuth } from "../../context/AuthContext";
 
 export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
@@ -21,6 +22,10 @@ export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: 
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
   const { success, error: showError } = useToast();
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission("create_hpp_master");
+  const canUpdate = hasPermission("update_hpp_master");
+  const canDelete = hasPermission("delete_hpp_master");
 
   const load = async () => {
     const res = await hppAPI.getAdminPeriodFactors();
@@ -54,13 +59,15 @@ export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: 
               <path fillRule="evenodd" clipRule="evenodd" d="M3.04175 9.37363C3.04175 5.87693 5.87711 3.04199 9.37508 3.04199C12.8731 3.04199 15.7084 5.87693 15.7084 9.37363C15.7084 12.8703 12.8731 15.7053 9.37508 15.7053C5.87711 15.7053 3.04175 12.8703 3.04175 9.37363ZM9.37508 1.54199C5.04902 1.54199 1.54175 5.04817 1.54175 9.37363C1.54175 13.6991 5.04902 17.2053 9.37508 17.2053C11.2674 17.2053 13.003 16.5344 14.357 15.4176L17.177 18.238C17.4699 18.5309 17.9448 18.5309 18.2377 18.238C18.5306 17.9451 18.5306 17.4703 18.2377 17.1774L15.418 14.3573C16.5365 13.0033 17.2084 11.2669 17.2084 9.37363C17.2084 5.04817 13.7011 1.54199 9.37508 1.54199Z" fill="currentColor" />
             </svg>
           </div>
-          <button 
-            onClick={() => { resetForm(); openModal(); }} 
-            className="flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
-          >
-            <PlusIcon className="size-4" />
-            Tambah Faktor
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => { resetForm(); openModal(); }}
+              className="flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+            >
+              <PlusIcon className="size-4" />
+              Tambah Faktor
+            </button>
+          )}
         </div>
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs dark:border-gray-800 dark:bg-gray-900">
           <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
@@ -92,38 +99,42 @@ export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: 
                     <TableCell className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-white">{r.percentage}%</TableCell>
                     <TableCell className="px-6 py-4">
                       <div className="flex items-center gap-1">
-                        <button 
-                          className="flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:text-gray-500 dark:hover:bg-brand-500/10 dark:hover:text-brand-400" 
-                          title="Edit"
-                          onClick={() => {
-                            setEditingId(r.id);
-                            setForm({
-                              period_duration: r.period_duration,
-                              min_year: String(Number(r.min_year ?? 1)),
-                              max_year: String(Number(r.max_year ?? 5)),
-                              percentage: r.percentage == null || r.percentage === "" ? "" : String(Number(r.percentage)),
-                            });
-                            openModal();
-                          }}
-                        >
-                          <PencilIcon className="size-4" />
-                        </button>
-                        <button 
-                          className="flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-error-50 hover:text-error-600 dark:text-gray-500 dark:hover:bg-error-500/10 dark:hover:text-error-400" 
-                          title="Hapus"
-                          onClick={async () => {
-                            if (!window.confirm("Hapus faktor periode ini?")) return;
-                            try {
-                              await hppAPI.deleteAdminPeriodFactor(r.id);
-                              success("Faktor periode berhasil dihapus!");
-                              load();
-                            } catch (err: any) {
-                              showError(err.message || "Gagal menghapus faktor periode.");
-                            }
-                          }}
-                        >
-                          <TrashBinIcon className="size-4" />
-                        </button>
+                        {canUpdate && (
+                          <button
+                            className="flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:text-gray-500 dark:hover:bg-brand-500/10 dark:hover:text-brand-400"
+                            title="Edit"
+                            onClick={() => {
+                              setEditingId(r.id);
+                              setForm({
+                                period_duration: r.period_duration,
+                                min_year: String(Number(r.min_year ?? 1)),
+                                max_year: String(Number(r.max_year ?? 5)),
+                                percentage: r.percentage == null || r.percentage === "" ? "" : String(Number(r.percentage)),
+                              });
+                              openModal();
+                            }}
+                          >
+                            <PencilIcon className="size-4" />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            className="flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-error-50 hover:text-error-600 dark:text-gray-500 dark:hover:bg-error-500/10 dark:hover:text-error-400"
+                            title="Hapus"
+                            onClick={async () => {
+                              if (!window.confirm("Hapus faktor periode ini?")) return;
+                              try {
+                                await hppAPI.deleteAdminPeriodFactor(r.id);
+                                success("Faktor periode berhasil dihapus!");
+                                load();
+                              } catch (err: any) {
+                                showError(err.message || "Gagal menghapus faktor periode.");
+                              }
+                            }}
+                          >
+                            <TrashBinIcon className="size-4" />
+                          </button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -211,8 +222,8 @@ export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: 
           <button onClick={() => { closeModal(); resetForm(); }} className="rounded-lg px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
             Batal
           </button>
-          <button 
-            className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
+          <button
+            className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
             onClick={async () => {
               try {
                 const pctTrim = form.percentage.trim();

@@ -8,7 +8,7 @@ import { useModal } from "../../hooks/useModal";
 import { PencilIcon, TrashBinIcon, PlusIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
 import { blurNormalizeDecimalDraft, parseDecimalDraft } from "./numericFormDraft";
-
+import { useAuth } from "../../context/AuthContext";
 export default function HppVariablesPage() {
   const [rows, setRows] = useState<any[]>([]);
   const [form, setForm] = useState<{ name: string; value: string }>({ name: "", value: "" });
@@ -16,7 +16,10 @@ export default function HppVariablesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const { isOpen, openModal, closeModal } = useModal();
   const { success, error: showError } = useToast();
-
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission("create_hpp_master");
+  const canUpdate = hasPermission("update_hpp_master");
+  const canDelete = hasPermission("delete_hpp_master");
   const filteredRows = rows.filter((item) =>
     item.name?.toLowerCase().includes(search.toLowerCase())
   );
@@ -53,85 +56,91 @@ export default function HppVariablesPage() {
               <path fillRule="evenodd" clipRule="evenodd" d="M3.04175 9.37363C3.04175 5.87693 5.87711 3.04199 9.37508 3.04199C12.8731 3.04199 15.7084 5.87693 15.7084 9.37363C15.7084 12.8703 12.8731 15.7053 9.37508 15.7053C5.87711 15.7053 3.04175 12.8703 3.04175 9.37363ZM9.37508 1.54199C5.04902 1.54199 1.54175 5.04817 1.54175 9.37363C1.54175 13.6991 5.04902 17.2053 9.37508 17.2053C11.2674 17.2053 13.003 16.5344 14.357 15.4176L17.177 18.238C17.4699 18.5309 17.9448 18.5309 18.2377 18.238C18.5306 17.9451 18.5306 17.4703 18.2377 17.1774L15.418 14.3573C16.5365 13.0033 17.2084 11.2669 17.2084 9.37363C17.2084 5.04817 13.7011 1.54199 9.37508 1.54199Z" fill="currentColor" />
             </svg>
           </div>
-          <button
-            onClick={() => {
-              resetForm();
-              openModal();
-            }}
-            className="flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
-          >
-            <PlusIcon className="size-4" />
-            Tambah Variabel
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => {
+                resetForm();
+                openModal();
+              }}
+              className="flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+            >
+              <PlusIcon className="size-4" />
+              Tambah Variabel
+            </button>
+          )}
         </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs dark:border-gray-800 dark:bg-gray-900">
-        <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
-          <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Total data: <span className="font-semibold text-gray-900 dark:text-white">{filteredRows.length}</span></p>
-        </div>
-        <div className="overflow-x-auto">
-          <Table className="w-full text-left border-collapse">
-            <TableHeader className="border-b border-gray-200 bg-gray-50/50 dark:border-gray-800 dark:bg-white/[0.02]">
-              <TableRow>
-                <TableCell isHeader className="px-6 py-3.5 text-left text-[12px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400 w-[80px]">No.</TableCell>
-                <TableCell isHeader className="px-6 py-3.5 text-left text-[12px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">Nama</TableCell>
-                <TableCell isHeader className="px-6 py-3.5 text-left text-[12px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400 w-[220px]">Nilai</TableCell>
-                <TableCell isHeader className="px-6 py-3.5 text-left text-[12px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400 w-[160px]">Aksi</TableCell>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-gray-200 dark:divide-gray-800">
-              {filteredRows.length === 0 && (
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs dark:border-gray-800 dark:bg-gray-900">
+          <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02]">
+            <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400">Total data: <span className="font-semibold text-gray-900 dark:text-white">{filteredRows.length}</span></p>
+          </div>
+          <div className="overflow-x-auto">
+            <Table className="w-full text-left border-collapse">
+              <TableHeader className="border-b border-gray-200 bg-gray-50/50 dark:border-gray-800 dark:bg-white/[0.02]">
                 <TableRow>
-                  <TableCell className="px-6 py-8 text-center text-[13px] text-gray-500" colSpan={4}>
-                    Belum ada data variabel sewa.
-                  </TableCell>
+                  <TableCell isHeader className="px-6 py-3.5 text-left text-[12px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400 w-[80px]">No.</TableCell>
+                  <TableCell isHeader className="px-6 py-3.5 text-left text-[12px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">Nama</TableCell>
+                  <TableCell isHeader className="px-6 py-3.5 text-left text-[12px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400 w-[220px]">Nilai</TableCell>
+                  <TableCell isHeader className="px-6 py-3.5 text-left text-[12px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400 w-[160px]">Aksi</TableCell>
                 </TableRow>
-              )}
-              {filteredRows.map((r, index) => (
-                <TableRow key={r.id} className="transition-colors hover:bg-gray-50/80 dark:hover:bg-white/[0.01]">
-                  <TableCell className="px-6 py-4 text-[13px] font-medium text-gray-900 whitespace-nowrap dark:text-white">{index + 1}</TableCell>
-                  <TableCell className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-300">{r.name}</TableCell>
-                  <TableCell className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-white">{Number(r.value).toLocaleString("id-ID")}</TableCell>
-                  <TableCell className="px-6 py-4">
-                    <div className="flex items-center gap-1">
-                      <button
-                        className="flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:text-gray-500 dark:hover:bg-brand-500/10 dark:hover:text-brand-400"
-                        title="Edit"
-                        onClick={() => {
-                          setEditingId(r.id);
-                          setForm({
-                            name: r.name,
-                            value: r.value == null || r.value === "" ? "" : String(Number(r.value)),
-                          });
-                          openModal();
-                        }}
-                      >
-                        <PencilIcon className="size-4" />
-                      </button>
-                      <button
-                        className="flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-error-50 hover:text-error-600 dark:text-gray-500 dark:hover:bg-error-500/10 dark:hover:text-error-400"
-                        title="Hapus"
-                        onClick={async () => {
-                          if (!window.confirm("Hapus variabel ini?")) return;
-                          try {
-                            await hppAPI.deleteRentalVariable(r.id);
-                            success("Variabel berhasil dihapus!");
-                            load();
-                          } catch (err: any) {
-                            showError(err.message || "Gagal menghapus variabel");
-                          }
-                        }}
-                      >
-                        <TrashBinIcon className="size-4" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody className="divide-y divide-gray-200 dark:divide-gray-800">
+                {filteredRows.length === 0 && (
+                  <TableRow>
+                    <TableCell className="px-6 py-8 text-center text-[13px] text-gray-500" colSpan={4}>
+                      Belum ada data variabel sewa.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredRows.map((r, index) => (
+                  <TableRow key={r.id} className="transition-colors hover:bg-gray-50/80 dark:hover:bg-white/[0.01]">
+                    <TableCell className="px-6 py-4 text-[13px] font-medium text-gray-900 whitespace-nowrap dark:text-white">{index + 1}</TableCell>
+                    <TableCell className="px-6 py-4 text-[13px] text-gray-600 dark:text-gray-300">{r.name}</TableCell>
+                    <TableCell className="px-6 py-4 text-[13px] font-medium text-gray-900 dark:text-white">{Number(r.value).toLocaleString("id-ID")}</TableCell>
+                    <TableCell className="px-6 py-4">
+                      <div className="flex items-center gap-1">
+                        {canUpdate && (
+                          <button
+                            className="flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:text-gray-500 dark:hover:bg-brand-500/10 dark:hover:text-brand-400"
+                            title="Edit"
+                            onClick={() => {
+                              setEditingId(r.id);
+                              setForm({
+                                name: r.name,
+                                value: r.value == null || r.value === "" ? "" : String(Number(r.value)),
+                              });
+                              openModal();
+                            }}
+                          >
+                            <PencilIcon className="size-4" />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            className="flex items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-error-50 hover:text-error-600 dark:text-gray-500 dark:hover:bg-error-500/10 dark:hover:text-error-400"
+                            title="Hapus"
+                            onClick={async () => {
+                              if (!window.confirm("Hapus variabel ini?")) return;
+                              try {
+                                await hppAPI.deleteRentalVariable(r.id);
+                                success("Variabel berhasil dihapus!");
+                                load();
+                              } catch (err: any) {
+                                showError(err.message || "Gagal menghapus variabel");
+                              }
+                            }}
+                          >
+                            <TrashBinIcon className="size-4" />
+                          </button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
-      </div>
       </div>
 
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[500px] p-6">
@@ -143,7 +152,7 @@ export default function HppVariablesPage() {
             Isi nama variabel dan nilai yang akan digunakan untuk kalkulasi HPP.
           </p>
         </div>
-        
+
         <div className="mt-6 flex flex-col gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -180,8 +189,8 @@ export default function HppVariablesPage() {
         </div>
 
         <div className="mt-8 flex justify-end gap-3">
-          <button 
-            onClick={() => { closeModal(); resetForm(); }} 
+          <button
+            onClick={() => { closeModal(); resetForm(); }}
             className="rounded-lg px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
           >
             Batal

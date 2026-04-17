@@ -22,9 +22,8 @@ import ViewUser from "./pages/Users/ViewUser";
 import Roles from "./pages/Roles/Roles";
 import EditRole from "./pages/Roles/EditRole";
 import Settings from "./pages/Settings/Settings";
-import HppSettings from "./pages/HppAdmin/HppSettings";
 import HppCalculatorAdmin from "./pages/HppAdmin/HppCalculatorAdmin";
-import HppMasterIndex from "./pages/HppAdmin/HppMasterIndex";
+// import HppMasterIndex from "./pages/HppAdmin/HppMasterIndex";
 import HppVariablesPage from "./pages/HppAdmin/HppVariablesPage";
 import HppLandValuesPage from "./pages/HppAdmin/HppLandValuesPage";
 import HppBuildingValuesPage from "./pages/HppAdmin/HppBuildingValuesPage";
@@ -184,29 +183,28 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
+            {/* <Route
               path="/hpp/settings"
               element={
                 <ProtectedRoute requiredPermission="view_setting">
                   <HppMasterIndex />
                 </ProtectedRoute>
               }
-            />
-            <Route path="/hpp/settings/legacy" element={<ProtectedRoute requiredPermission="view_setting"><HppSettings /></ProtectedRoute>} />
-            <Route path="/hpp/settings/variables" element={<ProtectedRoute requiredPermission="view_setting"><HppVariablesPage /></ProtectedRoute>} />
-            <Route path="/hpp/settings/fair-values" element={<ProtectedRoute requiredPermission="view_setting"><HppFairValuesPage /></ProtectedRoute>} />
-            <Route path="/hpp/settings/land-values" element={<ProtectedRoute requiredPermission="view_setting"><HppLandValuesPage /></ProtectedRoute>} />
-            <Route path="/hpp/settings/building-values" element={<ProtectedRoute requiredPermission="view_setting"><HppBuildingValuesPage /></ProtectedRoute>} />
-            <Route path="/hpp/settings/location-factors" element={<ProtectedRoute requiredPermission="view_setting"><HppLocationFactorsPage /></ProtectedRoute>} />
-            <Route path="/hpp/settings/entity-factors" element={<ProtectedRoute requiredPermission="view_setting"><HppEntityFactorsPage /></ProtectedRoute>} />
-            <Route path="/hpp/settings/period-factors" element={<ProtectedRoute requiredPermission="view_setting"><HppPeriodFactorsPage /></ProtectedRoute>} />
-            <Route path="/hpp/settings/payment-factors" element={<ProtectedRoute requiredPermission="view_setting"><HppPaymentFactorsPage /></ProtectedRoute>} />
-            <Route path="/hpp/settings/adjustment-factors" element={<ProtectedRoute requiredPermission="view_setting"><HppAdjustmentFactorsPage /></ProtectedRoute>} />
-            <Route path="/hpp/settings/taxes-margin" element={<ProtectedRoute requiredPermission="view_setting"><HppTaxesMarginPage /></ProtectedRoute>} />
+            /> */}
+            <Route path="/hpp/settings/variables" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppVariablesPage /></ProtectedRoute>} />
+            <Route path="/hpp/settings/fair-values" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppFairValuesPage /></ProtectedRoute>} />
+            <Route path="/hpp/settings/land-values" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppLandValuesPage /></ProtectedRoute>} />
+            <Route path="/hpp/settings/building-values" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppBuildingValuesPage /></ProtectedRoute>} />
+            <Route path="/hpp/settings/location-factors" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppLocationFactorsPage /></ProtectedRoute>} />
+            <Route path="/hpp/settings/entity-factors" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppEntityFactorsPage /></ProtectedRoute>} />
+            <Route path="/hpp/settings/period-factors" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppPeriodFactorsPage /></ProtectedRoute>} />
+            <Route path="/hpp/settings/payment-factors" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppPaymentFactorsPage /></ProtectedRoute>} />
+            <Route path="/hpp/settings/adjustment-factors" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppAdjustmentFactorsPage /></ProtectedRoute>} />
+            <Route path="/hpp/settings/taxes-margin" element={<ProtectedRoute requiredPermission="view_hpp_master"><HppTaxesMarginPage /></ProtectedRoute>} />
             <Route
               path="/hpp/calculator"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredPermission="view_hpp_calculator">
                   <HppCalculatorAdmin />
                 </ProtectedRoute>
               }
