@@ -7,11 +7,16 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
+import { blurNormalizeDecimalDraft, parseDecimalDraft } from "./numericFormDraft";
 
 export default function HppPaymentFactorsPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState({ lease_term: "", rate: 0, description: "" });
+  const [form, setForm] = useState<{ lease_term: string; rate: string; description: string }>({
+    lease_term: "",
+    rate: "",
+    description: "",
+  });
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
   const { success, error: showError } = useToast();
@@ -23,7 +28,7 @@ export default function HppPaymentFactorsPage({ embedded = false }: { embedded?:
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
-    setForm({ lease_term: "", rate: 0, description: "" });
+    setForm({ lease_term: "", rate: "", description: "" });
     setEditingId(null);
   };
   const filteredRows = rows.filter((item) =>
@@ -90,7 +95,11 @@ export default function HppPaymentFactorsPage({ embedded = false }: { embedded?:
                           title="Edit"
                           onClick={() => {
                             setEditingId(r.id);
-                            setForm({ lease_term: r.lease_term, rate: Number(r.rate), description: r.description });
+                            setForm({
+                              lease_term: r.lease_term,
+                              rate: r.rate == null || r.rate === "" ? "" : String(Number(r.rate)),
+                              description: r.description ?? "",
+                            });
                             openModal();
                           }}
                         >
@@ -134,7 +143,22 @@ export default function HppPaymentFactorsPage({ embedded = false }: { embedded?:
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Rate (%)</label>
-            <input type="number" placeholder="0" value={form.rate} onChange={(e) => setForm({ ...form, rate: Number(e.target.value) })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" />
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="Mis. 25"
+              autoComplete="off"
+              value={form.rate}
+              onChange={(e) => {
+                const next = parseDecimalDraft(e);
+                if (next !== null) setForm({ ...form, rate: next });
+              }}
+              onBlur={() => {
+                const t = blurNormalizeDecimalDraft(form.rate);
+                if (t !== form.rate) setForm({ ...form, rate: t });
+              }}
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
+            />
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Deskripsi</label>
@@ -149,11 +173,22 @@ export default function HppPaymentFactorsPage({ embedded = false }: { embedded?:
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
               try {
+                const trimmed = form.rate.trim();
+                if (trimmed === "") {
+                  showError("Isi rate (%).");
+                  return;
+                }
+                const rate = Number(trimmed.replace(",", "."));
+                if (!Number.isFinite(rate) || rate < 0) {
+                  showError("Rate harus berupa angka yang valid.");
+                  return;
+                }
+                const payload = { lease_term: form.lease_term, rate, description: form.description };
                 if (editingId) {
-                  await hppAPI.updateAdminPaymentFactor(editingId, form);
+                  await hppAPI.updateAdminPaymentFactor(editingId, payload);
                   success("Faktor pembayaran berhasil diperbarui!");
                 } else {
-                  await hppAPI.createAdminPaymentFactor(form);
+                  await hppAPI.createAdminPaymentFactor(payload);
                   success("Faktor pembayaran berhasil ditambahkan!");
                 }
                 closeModal();

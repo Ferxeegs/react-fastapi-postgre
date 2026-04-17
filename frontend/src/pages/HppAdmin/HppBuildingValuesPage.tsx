@@ -8,16 +8,22 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
+import { blurNormalizeIntDraft, parseDigitsOnlyDraft } from "./numericFormDraft";
 
 export default function HppBuildingValuesPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    asset_location: string;
+    category: string;
+    /** Draft teks input angka (boleh kosong saat mengetik; diparse saat simpan). */
+    rent_price_index: string;
+  }>({
     asset_location: "",
     category: "sederhana",
-    rent_price_index: 0,
+    rent_price_index: "",
   });
   const { success, error: showError } = useToast();
 
@@ -28,7 +34,7 @@ export default function HppBuildingValuesPage({ embedded = false }: { embedded?:
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
-    setForm({ asset_location: "", category: "sederhana", rent_price_index: 0 });
+    setForm({ asset_location: "", category: "sederhana", rent_price_index: "" });
     setEditingId(null);
   };
   const filteredRows = rows.filter((item) =>
@@ -102,7 +108,14 @@ export default function HppBuildingValuesPage({ embedded = false }: { embedded?:
                           title="Edit"
                           onClick={() => {
                             setEditingId(r.id);
-                            setForm({ asset_location: r.asset_location, category: r.category, rent_price_index: Number(r.rent_price_index) });
+                            setForm({
+                              asset_location: r.asset_location,
+                              category: r.category,
+                              rent_price_index:
+                                r.rent_price_index == null || r.rent_price_index === ""
+                                  ? ""
+                                  : String(Number(r.rent_price_index)),
+                            });
                             openModal();
                           }}
                         >
@@ -158,7 +171,22 @@ export default function HppBuildingValuesPage({ embedded = false }: { embedded?:
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Indeks Harga Sewa</label>
-            <input type="number" placeholder="0" value={form.rent_price_index} onChange={(e) => setForm({ ...form, rent_price_index: Number(e.target.value) })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" />
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Mis. 1500000"
+              autoComplete="off"
+              value={form.rent_price_index}
+              onChange={(e) => {
+                const next = parseDigitsOnlyDraft(e);
+                if (next !== null) setForm({ ...form, rent_price_index: next });
+              }}
+              onBlur={() => {
+                const t = blurNormalizeIntDraft(form.rent_price_index);
+                if (t !== form.rent_price_index) setForm({ ...form, rent_price_index: t });
+              }}
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
+            />
           </div>
         </div>
         <div className="mt-8 flex justify-end gap-3">
@@ -169,11 +197,26 @@ export default function HppBuildingValuesPage({ embedded = false }: { embedded?:
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
               try {
+                const trimmed = form.rent_price_index.trim();
+                if (trimmed === "") {
+                  showError("Isi indeks harga sewa (Rp/m²).");
+                  return;
+                }
+                const rent_price_index = Number(trimmed);
+                if (!Number.isFinite(rent_price_index) || rent_price_index < 0) {
+                  showError("Indeks harga sewa harus berupa angka yang valid.");
+                  return;
+                }
+                const payload = {
+                  asset_location: form.asset_location,
+                  category: form.category,
+                  rent_price_index,
+                };
                 if (editingId) {
-                  await hppAPI.updateAdminBuildingValue(editingId, form);
+                  await hppAPI.updateAdminBuildingValue(editingId, payload);
                   success("Nilai wajar bangunan berhasil diperbarui!");
                 } else {
-                  await hppAPI.createAdminBuildingValue(form);
+                  await hppAPI.createAdminBuildingValue(payload);
                   success("Nilai wajar bangunan berhasil ditambahkan!");
                 }
                 closeModal();

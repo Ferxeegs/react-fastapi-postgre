@@ -4,7 +4,7 @@ export type PaymentType = "lumpsum" | "installment";
 
 export type OverheadItem = {
   name: string;
-  amount: number;
+  amount: number | "";
 };
 
 export type RentVariable = {

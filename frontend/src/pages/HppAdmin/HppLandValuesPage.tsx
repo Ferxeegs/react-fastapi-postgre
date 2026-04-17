@@ -7,11 +7,16 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
+import { blurNormalizeIntDraft, parseDigitsOnlyDraft } from "./numericFormDraft";
 
 export default function HppLandValuesPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState({ asset_location: "", road_name: "", appraised_value: 0 });
+  const [form, setForm] = useState<{ asset_location: string; road_name: string; appraised_value: string }>({
+    asset_location: "",
+    road_name: "",
+    appraised_value: "",
+  });
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
   const { success, error: showError } = useToast();
@@ -26,7 +31,7 @@ export default function HppLandValuesPage({ embedded = false }: { embedded?: boo
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
-    setForm({ asset_location: "", road_name: "", appraised_value: 0 });
+    setForm({ asset_location: "", road_name: "", appraised_value: "" });
     setEditingId(null);
   };
 
@@ -93,7 +98,14 @@ export default function HppLandValuesPage({ embedded = false }: { embedded?: boo
                           title="Edit"
                           onClick={() => {
                             setEditingId(r.id);
-                            setForm({ asset_location: r.asset_location, road_name: r.road_name, appraised_value: Number(r.appraised_value) });
+                            setForm({
+                              asset_location: r.asset_location,
+                              road_name: r.road_name,
+                              appraised_value:
+                                r.appraised_value == null || r.appraised_value === ""
+                                  ? ""
+                                  : String(Number(r.appraised_value)),
+                            });
                             openModal();
                           }}
                         >
@@ -142,7 +154,22 @@ export default function HppLandValuesPage({ embedded = false }: { embedded?: boo
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Nilai Taksiran</label>
-            <input type="number" placeholder="0" value={form.appraised_value} onChange={(e) => setForm({ ...form, appraised_value: Number(e.target.value) })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" />
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Mis. 5000000"
+              autoComplete="off"
+              value={form.appraised_value}
+              onChange={(e) => {
+                const next = parseDigitsOnlyDraft(e);
+                if (next !== null) setForm({ ...form, appraised_value: next });
+              }}
+              onBlur={() => {
+                const t = blurNormalizeIntDraft(form.appraised_value);
+                if (t !== form.appraised_value) setForm({ ...form, appraised_value: t });
+              }}
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
+            />
           </div>
         </div>
         <div className="mt-8 flex justify-end gap-3">
@@ -153,11 +180,22 @@ export default function HppLandValuesPage({ embedded = false }: { embedded?: boo
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
               try {
+                const trimmed = form.appraised_value.trim();
+                if (trimmed === "") {
+                  showError("Isi nilai taksiran.");
+                  return;
+                }
+                const appraised_value = Number(trimmed);
+                if (!Number.isFinite(appraised_value) || appraised_value < 0) {
+                  showError("Nilai taksiran harus berupa angka yang valid.");
+                  return;
+                }
+                const payload = { asset_location: form.asset_location, road_name: form.road_name, appraised_value };
                 if (editingId) {
-                  await hppAPI.updateAdminLandValue(editingId, form);
+                  await hppAPI.updateAdminLandValue(editingId, payload);
                   success("Nilai wajar tanah berhasil diperbarui!");
                 } else {
-                  await hppAPI.createAdminLandValue(form);
+                  await hppAPI.createAdminLandValue(payload);
                   success("Nilai wajar tanah berhasil ditambahkan!");
                 }
                 closeModal();

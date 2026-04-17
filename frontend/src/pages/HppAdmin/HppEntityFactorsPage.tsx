@@ -7,11 +7,16 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
+import { blurNormalizeDecimalDraft, parseDecimalDraft } from "./numericFormDraft";
 
 export default function HppEntityFactorsPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState({ entity_type: "", category: "", percentage: 0 });
+  const [form, setForm] = useState<{ entity_type: string; category: string; percentage: string }>({
+    entity_type: "",
+    category: "",
+    percentage: "",
+  });
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
   const { success, error: showError } = useToast();
@@ -23,7 +28,7 @@ export default function HppEntityFactorsPage({ embedded = false }: { embedded?: 
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
-    setForm({ entity_type: "", category: "", percentage: 0 });
+    setForm({ entity_type: "", category: "", percentage: "" });
     setEditingId(null);
   };
   const filteredRows = rows.filter((item) =>
@@ -90,7 +95,12 @@ export default function HppEntityFactorsPage({ embedded = false }: { embedded?: 
                           title="Edit"
                           onClick={() => {
                             setEditingId(r.id);
-                            setForm({ entity_type: r.entity_type, category: r.category, percentage: Number(r.percentage) });
+                            setForm({
+                              entity_type: r.entity_type,
+                              category: r.category,
+                              percentage:
+                                r.percentage == null || r.percentage === "" ? "" : String(Number(r.percentage)),
+                            });
                             openModal();
                           }}
                         >
@@ -156,12 +166,21 @@ export default function HppEntityFactorsPage({ embedded = false }: { embedded?: 
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Rate (%)
             </label>
-            <input 
-              type="number" 
-              placeholder="0" 
-              value={form.percentage} 
-              onChange={(e) => setForm({ ...form, percentage: Number(e.target.value) })} 
-              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" 
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="Mis. 100"
+              autoComplete="off"
+              value={form.percentage}
+              onChange={(e) => {
+                const next = parseDecimalDraft(e);
+                if (next !== null) setForm({ ...form, percentage: next });
+              }}
+              onBlur={() => {
+                const t = blurNormalizeDecimalDraft(form.percentage);
+                if (t !== form.percentage) setForm({ ...form, percentage: t });
+              }}
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
             />
           </div>
         </div>
@@ -177,11 +196,22 @@ export default function HppEntityFactorsPage({ embedded = false }: { embedded?: 
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
               try {
+                const trimmed = form.percentage.trim();
+                if (trimmed === "") {
+                  showError("Isi rate (%).");
+                  return;
+                }
+                const percentage = Number(trimmed.replace(",", "."));
+                if (!Number.isFinite(percentage) || percentage < 0) {
+                  showError("Rate harus berupa angka yang valid.");
+                  return;
+                }
+                const payload = { entity_type: form.entity_type, category: form.category, percentage };
                 if (editingId) {
-                  await hppAPI.updateAdminEntityFactor(editingId, form);
+                  await hppAPI.updateAdminEntityFactor(editingId, payload);
                   success("Faktor entitas berhasil diperbarui!");
                 } else {
-                  await hppAPI.createAdminEntityFactor(form);
+                  await hppAPI.createAdminEntityFactor(payload);
                   success("Faktor entitas berhasil ditambahkan!");
                 }
                 closeModal();

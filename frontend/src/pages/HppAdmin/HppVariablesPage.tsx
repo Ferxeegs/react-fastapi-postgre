@@ -7,10 +7,11 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PencilIcon, TrashBinIcon, PlusIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
+import { blurNormalizeDecimalDraft, parseDecimalDraft } from "./numericFormDraft";
 
 export default function HppVariablesPage() {
   const [rows, setRows] = useState<any[]>([]);
-  const [form, setForm] = useState({ name: "", value: 0 });
+  const [form, setForm] = useState<{ name: string; value: string }>({ name: "", value: "" });
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const { isOpen, openModal, closeModal } = useModal();
@@ -21,7 +22,7 @@ export default function HppVariablesPage() {
   );
 
   const resetForm = () => {
-    setForm({ name: "", value: 0 });
+    setForm({ name: "", value: "" });
     setEditingId(null);
   };
 
@@ -98,7 +99,10 @@ export default function HppVariablesPage() {
                         title="Edit"
                         onClick={() => {
                           setEditingId(r.id);
-                          setForm({ name: r.name, value: Number(r.value) });
+                          setForm({
+                            name: r.name,
+                            value: r.value == null || r.value === "" ? "" : String(Number(r.value)),
+                          });
                           openModal();
                         }}
                       >
@@ -157,10 +161,19 @@ export default function HppVariablesPage() {
               Nilai
             </label>
             <input
-              type="number"
-              placeholder="0"
+              type="text"
+              inputMode="decimal"
+              placeholder="Mis. 0.05"
+              autoComplete="off"
               value={form.value}
-              onChange={(e) => setForm({ ...form, value: Number(e.target.value) })}
+              onChange={(e) => {
+                const next = parseDecimalDraft(e);
+                if (next !== null) setForm({ ...form, value: next });
+              }}
+              onBlur={() => {
+                const t = blurNormalizeDecimalDraft(form.value);
+                if (t !== form.value) setForm({ ...form, value: t });
+              }}
               className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
             />
           </div>
@@ -177,11 +190,22 @@ export default function HppVariablesPage() {
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
             onClick={async () => {
               try {
+                const trimmed = form.value.trim();
+                if (trimmed === "") {
+                  showError("Isi nilai variabel.");
+                  return;
+                }
+                const value = Number(trimmed.replace(",", "."));
+                if (!Number.isFinite(value)) {
+                  showError("Nilai harus berupa angka yang valid.");
+                  return;
+                }
+                const payload = { name: form.name, value };
                 if (editingId) {
-                  await hppAPI.updateRentalVariable(editingId, { name: form.name, value: form.value });
+                  await hppAPI.updateRentalVariable(editingId, payload);
                   success("Variabel berhasil diperbarui!");
                 } else {
-                  await hppAPI.createRentalVariable(form);
+                  await hppAPI.createRentalVariable(payload);
                   success("Variabel berhasil ditambahkan!");
                 }
                 closeModal();

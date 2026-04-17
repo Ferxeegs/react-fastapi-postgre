@@ -7,14 +7,20 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
+import { blurNormalizeDecimalDraft, parseDecimalDraft } from "./numericFormDraft";
 
 export default function HppTaxesMarginPage() {
   const [taxes, setTaxes] = useState<any[]>([]);
   const [marginFees, setMarginFees] = useState<any[]>([]);
   const [editingTaxId, setEditingTaxId] = useState<number | null>(null);
   const [editingMarginId, setEditingMarginId] = useState<number | null>(null);
-  const [marginForm, setMarginForm] = useState({ name: "", rate: 0 });
-  const [form, setForm] = useState({ name: "", rate: 0, coverage: 0, description: "" });
+  const [marginForm, setMarginForm] = useState<{ name: string; rate: string }>({ name: "", rate: "" });
+  const [form, setForm] = useState<{ name: string; rate: string; coverage: string; description: string }>({
+    name: "",
+    rate: "",
+    coverage: "",
+    description: "",
+  });
   const [search, setSearch] = useState("");
   const taxModal = useModal();
   const marginModal = useModal();
@@ -52,7 +58,7 @@ export default function HppTaxesMarginPage() {
             className="flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={() => {
               setEditingTaxId(null);
-              setForm({ name: "", rate: 0, coverage: 0, description: "" });
+              setForm({ name: "", rate: "", coverage: "", description: "" });
               taxModal.openModal();
             }}
           >
@@ -69,7 +75,7 @@ export default function HppTaxesMarginPage() {
                 className="flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
                 onClick={() => {
                   setEditingMarginId(null);
-                  setMarginForm({ name: "", rate: 0 });
+                  setMarginForm({ name: "", rate: "" });
                   marginModal.openModal();
                 }}
               >
@@ -88,7 +94,7 @@ export default function HppTaxesMarginPage() {
                     title="Edit"
                     onClick={() => {
                       setEditingMarginId(m.id);
-                      setMarginForm({ name: m.name, rate: Number(m.rate) });
+                      setMarginForm({ name: m.name, rate: String(Number(m.rate)) });
                       marginModal.openModal();
                     }}
                   >
@@ -154,7 +160,12 @@ export default function HppTaxesMarginPage() {
                           title="Edit"
                           onClick={() => {
                             setEditingTaxId(t.id);
-                            setForm({ name: t.name, rate: Number(t.rate), coverage: Number(t.coverage), description: t.description || "" });
+                            setForm({
+                              name: t.name,
+                              rate: String(Number(t.rate)),
+                              coverage: String(Number(t.coverage)),
+                              description: t.description || "",
+                            });
                             taxModal.openModal();
                           }}
                         >
@@ -199,11 +210,41 @@ export default function HppTaxesMarginPage() {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Rate (%)</label>
-            <input type="number" placeholder="0" value={form.rate} onChange={(e) => setForm({ ...form, rate: Number(e.target.value) })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" />
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="Mis. 11"
+              autoComplete="off"
+              value={form.rate}
+              onChange={(e) => {
+                const next = parseDecimalDraft(e);
+                if (next !== null) setForm({ ...form, rate: next });
+              }}
+              onBlur={() => {
+                const t = blurNormalizeDecimalDraft(form.rate);
+                if (t !== form.rate) setForm({ ...form, rate: t });
+              }}
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
+            />
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Coverage (%)</label>
-            <input type="number" placeholder="0" value={form.coverage} onChange={(e) => setForm({ ...form, coverage: Number(e.target.value) })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" />
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="Mis. 100"
+              autoComplete="off"
+              value={form.coverage}
+              onChange={(e) => {
+                const next = parseDecimalDraft(e);
+                if (next !== null) setForm({ ...form, coverage: next });
+              }}
+              onBlur={() => {
+                const t = blurNormalizeDecimalDraft(form.coverage);
+                if (t !== form.coverage) setForm({ ...form, coverage: t });
+              }}
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
+            />
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Deskripsi (Opsional)</label>
@@ -218,16 +259,31 @@ export default function HppTaxesMarginPage() {
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
               try {
+                const rate = Number(form.rate.trim().replace(",", "."));
+                const coverage = Number(form.coverage.trim().replace(",", "."));
+                if (form.name.trim() === "") {
+                  showError("Isi nama pajak.");
+                  return;
+                }
+                if (form.rate.trim() === "" || !Number.isFinite(rate) || rate < 0) {
+                  showError("Isi rate (%) dengan angka yang valid.");
+                  return;
+                }
+                if (form.coverage.trim() === "" || !Number.isFinite(coverage) || coverage < 0) {
+                  showError("Isi coverage (%) dengan angka yang valid.");
+                  return;
+                }
+                const taxPayload = { name: form.name.trim(), rate, coverage, description: form.description };
                 if (editingTaxId) {
-                  await hppAPI.updateAdminTax(editingTaxId, form);
+                  await hppAPI.updateAdminTax(editingTaxId, taxPayload);
                   success("Akses pajak berhasil diperbarui!");
                 } else {
-                  await hppAPI.createAdminTax(form);
+                  await hppAPI.createAdminTax(taxPayload);
                   success("Akses pajak berhasil ditambahkan!");
                 }
                 taxModal.closeModal();
                 setEditingTaxId(null);
-                setForm({ name: "", rate: 0, coverage: 0, description: "" });
+                setForm({ name: "", rate: "", coverage: "", description: "" });
                 load();
               } catch (err: any) {
                 showError(err.message || "Gagal menyimpan pajak.");
@@ -252,7 +308,22 @@ export default function HppTaxesMarginPage() {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Rate (%)</label>
-            <input type="number" placeholder="0" value={marginForm.rate} onChange={(e) => setMarginForm({ ...marginForm, rate: Number(e.target.value) })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" />
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="Mis. 10"
+              autoComplete="off"
+              value={marginForm.rate}
+              onChange={(e) => {
+                const next = parseDecimalDraft(e);
+                if (next !== null) setMarginForm({ ...marginForm, rate: next });
+              }}
+              onBlur={() => {
+                const t = blurNormalizeDecimalDraft(marginForm.rate);
+                if (t !== marginForm.rate) setMarginForm({ ...marginForm, rate: t });
+              }}
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
+            />
           </div>
         </div>
         <div className="mt-8 flex justify-end gap-3">
@@ -263,16 +334,26 @@ export default function HppTaxesMarginPage() {
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
               try {
+                const mrate = Number(marginForm.rate.trim().replace(",", "."));
+                if (marginForm.name.trim() === "") {
+                  showError("Isi nama margin.");
+                  return;
+                }
+                if (marginForm.rate.trim() === "" || !Number.isFinite(mrate) || mrate < 0) {
+                  showError("Isi rate (%) dengan angka yang valid.");
+                  return;
+                }
+                const marginPayload = { name: marginForm.name.trim(), rate: mrate };
                 if (editingMarginId) {
-                  await hppAPI.updateAdminMarginFeeById(editingMarginId, marginForm);
+                  await hppAPI.updateAdminMarginFeeById(editingMarginId, marginPayload);
                   success("Margin fee berhasil diperbarui!");
                 } else {
-                  await hppAPI.createAdminMarginFee(marginForm);
+                  await hppAPI.createAdminMarginFee(marginPayload);
                   success("Margin fee berhasil ditambahkan!");
                 }
                 marginModal.closeModal();
                 setEditingMarginId(null);
-                setMarginForm({ name: "", rate: 0 });
+                setMarginForm({ name: "", rate: "" });
                 load();
               } catch (err: any) {
                 showError(err.message || "Gagal menyimpan margin fee.");

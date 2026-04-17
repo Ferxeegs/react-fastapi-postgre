@@ -49,8 +49,8 @@ export default function PublicHppCalculator({
   const [master, setMaster] = useState<HppMasterData | null>(null);
   const [partnerName, setPartnerName] = useState("");
   const [assetLandType, setAssetLandType] = useState<"BMN" | "BMU">("BMU");
-  const [landArea, setLandArea] = useState(0);
-  const [buildingArea, setBuildingArea] = useState(0);
+  const [landArea, setLandArea] = useState<number | "">("");
+  const [buildingArea, setBuildingArea] = useState<number | "">("");
   const [selectedLandValueId, setSelectedLandValueId] = useState<number | null>(null);
   const [selectedBuildingValueId, setSelectedBuildingValueId] = useState<number | null>(null);
   const [selectedLandEntityFactorId, setSelectedLandEntityFactorId] = useState<number | null>(null);
@@ -60,8 +60,8 @@ export default function PublicHppCalculator({
   const [selectedPaymentFactorId, setSelectedPaymentFactorId] = useState<number | null>(null);
   const [periodType, setPeriodType] = useState<"year" | "month" | "day" | "hour">("year");
   const [paymentType, setPaymentType] = useState<"lumpsum" | "installment">("lumpsum");
-  const [durationYears, setDurationYears] = useState(1);
-  const [overheads, setOverheads] = useState<OverheadItem[]>([{ name: "", amount: 0 }]);
+  const [durationYears, setDurationYears] = useState<number | "">(1);
+  const [overheads, setOverheads] = useState<OverheadItem[]>([{ name: "", amount: "" }]);
   const [selectedTaxes, setSelectedTaxes] = useState<number[]>([]);
   const [tenantCategory, setTenantCategory] = useState<"bisnis" | "non-bisnis" | "sosial">("bisnis");
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
@@ -133,7 +133,7 @@ export default function PublicHppCalculator({
     () => toSafeNumber(master?.rent_variables?.find((v) => String(v.name).toLowerCase().includes("bangunan"))?.value, 100),
     [master]
   );
-  const [marginFee, setMarginFee] = useState(10);
+  const [marginFee, setMarginFee] = useState<number | "">(10);
 
   const selectedLandValue = useMemo(
     () => master?.fair_land_values?.find((v) => v.id === selectedLandValueId),
@@ -209,7 +209,7 @@ export default function PublicHppCalculator({
     const maxY = (f: PeriodAdjustmentFactor) => (typeof f.max_year === "number" ? f.max_year : 99);
     const matched =
       periodType === "year"
-        ? candidates.find((f) => durationYears >= minY(f) && durationYears <= maxY(f)) ?? candidates[0]
+        ? candidates.find((f) => Number(durationYears) >= minY(f) && Number(durationYears) <= maxY(f)) ?? candidates[0]
         : candidates[0];
     if (matched) setSelectedPeriodFactorId(matched.id);
   }, [periodType, durationYears, master]);
@@ -235,7 +235,7 @@ export default function PublicHppCalculator({
       return { f, year, isTerminHint, isLunasHint };
     });
 
-    const exactTermin = rows.find((r) => r.year === durationYears && (r.isTerminHint || !r.isLunasHint));
+    const exactTermin = rows.find((r) => r.year === Number(durationYears) && (r.isTerminHint || !r.isLunasHint));
     if (exactTermin) {
       setSelectedPaymentFactorId(exactTermin.f.id);
       return;
@@ -243,7 +243,7 @@ export default function PublicHppCalculator({
 
     const nearestTermin = rows
       .filter((r) => r.year != null && (r.isTerminHint || !r.isLunasHint))
-      .sort((a, b) => Math.abs((a.year as number) - durationYears) - Math.abs((b.year as number) - durationYears))[0];
+      .sort((a, b) => Math.abs((a.year as number) - Number(durationYears)) - Math.abs((b.year as number) - Number(durationYears)))[0];
     if (nearestTermin) {
       setSelectedPaymentFactorId(nearestTermin.f.id);
       return;
@@ -253,7 +253,7 @@ export default function PublicHppCalculator({
     if (factors.length > 0) setSelectedPaymentFactorId(factors[0].id);
   }, [paymentType, durationYears, master]);
 
-  const terminDisabled = periodType !== "year" || durationYears <= 1;
+  const terminDisabled = periodType !== "year" || Number(durationYears) <= 1;
   useEffect(() => {
     if (terminDisabled && paymentType === "installment") setPaymentType("lumpsum");
   }, [terminDisabled, paymentType]);
@@ -277,7 +277,7 @@ export default function PublicHppCalculator({
   /** Komponen sewa tanah/bangunan per tahun sebelum FP3 & FP4 (pratinjau langkah 1–2). */
   const previewLandBase = useMemo(
     () =>
-      landArea *
+      Number(landArea) *
       Number(selectedLandValue?.appraised_value ?? 0) *
       (rentalVarLand / 100) *
       (fp1LandPct / 100) *
@@ -287,7 +287,7 @@ export default function PublicHppCalculator({
 
   const previewBuildingBase = useMemo(
     () =>
-      buildingArea *
+      Number(buildingArea) *
       Number(selectedBuildingValue?.rent_price_index ?? 0) *
       (rentalVarBuilding / 100) *
       (fp1BuildingPct / 100) *
@@ -297,9 +297,9 @@ export default function PublicHppCalculator({
 
   const onAddOverhead = () => setOverheads((prev) => [...prev, { name: "", amount: 0 }]);
 
-  const onChangeOverhead = (idx: number, key: keyof OverheadItem, value: string) => {
+  const onChangeOverhead = (idx: number, key: keyof OverheadItem, value: any) => {
     setOverheads((prev) =>
-      prev.map((item, index) => (index === idx ? { ...item, [key]: key === "amount" ? Number(value) || 0 : value } : item))
+      prev.map((item, index) => (index === idx ? { ...item, [key]: key === "amount" ? (value === "" ? "" : Number(value) || 0) : value } : item))
     );
   };
 
@@ -313,8 +313,8 @@ export default function PublicHppCalculator({
 
   const costingCore = useMemo(() => {
     return computeCosting({
-      landArea,
-      buildingArea,
+      landArea: Number(landArea),
+      buildingArea: Number(buildingArea),
       fairLand: toSafeNumber(selectedLandValue?.appraised_value),
       fairBuilding: toSafeNumber(selectedBuildingValue?.rent_price_index),
       rentalVarLandPct: rentalVarLand,
@@ -328,7 +328,7 @@ export default function PublicHppCalculator({
       marginFeePct: toSafeNumber(marginFee),
       periodType,
       paymentType,
-      durationYears,
+      durationYears: Number(durationYears),
     });
   }, [
     landArea,

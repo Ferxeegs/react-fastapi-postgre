@@ -81,10 +81,10 @@ export function CostingSection({
   setTenantCategory: (v: TenantCategory) => void;
   periodType: PeriodType;
   setPeriodType: (v: PeriodType) => void;
-  durationYears: number;
-  setDurationYears: (v: number) => void;
-  landArea: number;
-  setLandArea: (v: number) => void;
+  durationYears: number | "";
+  setDurationYears: (v: number | "") => void;
+  landArea: number | "";
+  setLandArea: (v: number | "") => void;
   selectedLandValueId: number | null;
   setSelectedLandValueId: (v: number) => void;
   landEntityFactorRows: EntityAdjustmentFactor[];
@@ -105,8 +105,8 @@ export function CostingSection({
   fp1LandPct: number;
   fp2Pct: number;
   previewLandBase: number;
-  buildingArea: number;
-  setBuildingArea: (v: number) => void;
+  buildingArea: number | "";
+  setBuildingArea: (v: number | "") => void;
   selectedBuildingValueId: number | null;
   setSelectedBuildingValueId: (v: number) => void;
   buildingEntityFactorRows: EntityAdjustmentFactor[];
@@ -117,11 +117,11 @@ export function CostingSection({
   fp1BuildingPct: number;
   previewBuildingBase: number;
   overheads: OverheadItem[];
-  onChangeOverhead: (idx: number, key: keyof OverheadItem, value: string) => void;
+  onChangeOverhead: (idx: number, key: keyof OverheadItem, value: any) => void;
   onRemoveOverhead: (idx: number) => void;
   onAddOverhead: () => void;
   overheadTotal: number;
-  marginFee: number;
+  marginFee: number | "";
   costingCore: CostingResult;
   hppLunasLabel: string;
   canGoNext: () => boolean;
@@ -182,7 +182,7 @@ export function CostingSection({
                 <div>
                   <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Luas tanah (m²)</p>
                   <div className="relative">
-                    <input type="number" value={landArea || ""} onChange={(e) => setLandArea(Number(e.target.value))} placeholder="0" onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-3 pr-12 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                    <input type="number" value={landArea === "" ? "" : landArea} onChange={(e) => setLandArea(e.target.value === "" ? "" : Number(e.target.value))} placeholder="0" onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-3 pr-12 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">m²</span>
                   </div>
                 </div>
@@ -251,7 +251,7 @@ export function CostingSection({
                 <div>
                   <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300">Luas bangunan (m²)</p>
                   <div className="relative">
-                    <input type="number" value={buildingArea || ""} onChange={(e) => setBuildingArea(Number(e.target.value))} placeholder="0" onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-3 pr-12 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                    <input type="number" value={buildingArea === "" ? "" : buildingArea} onChange={(e) => setBuildingArea(e.target.value === "" ? "" : Number(e.target.value))} placeholder="0" onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-3 pr-12 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">m²</span>
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export function CostingSection({
                 {overheads.map((item, idx) => (
                   <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_140px_auto]">
                     <input value={item.name} onChange={(e) => onChangeOverhead(idx, "name", e.target.value)} placeholder="Nama biaya overhead (cth: Kebersihan, Listrik)" className="h-11 rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-                    <input type="number" value={item.amount} onChange={(e) => onChangeOverhead(idx, "amount", e.target.value)} placeholder="Rp 0" onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+                    <input type="number" value={item.amount === "" ? "" : item.amount} onChange={(e) => onChangeOverhead(idx, "amount", e.target.value === "" ? "" : Number(e.target.value))} placeholder="Rp 0" onWheel={(e) => (e.target as HTMLInputElement).blur()} className="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
                     <button type="button" onClick={() => onRemoveOverhead(idx)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-error-200 bg-white text-error-600 hover:bg-error-50 dark:border-error-800 dark:bg-gray-900 dark:hover:bg-error-950/30" aria-label="Hapus baris">
                       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -394,7 +394,7 @@ export function CostingSection({
                   selectedPaymentFactorId={selectedPaymentFactorId}
                   selectedPaymentFactorLabel={selectedPaymentFactorLabel}
                   periodType={periodType}
-                  durationYears={durationYears}
+                  durationYears={Number(durationYears)}
                   hpptWithMargin={costingCore.hpptWithMargin}
                   fp4Pct={fp4Pct}
                   paymentFactors={master?.payment_adjustment_factors || []}
@@ -444,7 +444,7 @@ export function CostingSection({
                   <div className="mt-3 rounded-lg border border-brand-200 bg-white/70 p-3 dark:border-brand-800 dark:bg-gray-900/40">
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">Rincian pembayaran per tahun</p>
                     <div className="mt-2 grid gap-1">
-                      {Array.from({ length: durationYears }, (_, i) => (
+                      {Array.from({ length: Number(durationYears) }, (_, i) => (
                         <div key={i} className="flex items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs dark:border-gray-700 dark:bg-gray-900">
                           <span>Tahun {i + 1}</span>
                           <span className="font-semibold">{formatCurrency(costingCore.selectedHpp)}</span>
@@ -452,7 +452,7 @@ export function CostingSection({
                       ))}
                     </div>
                     <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                      Total kontrak {durationYears} tahun: {formatCurrency(costingCore.selectedHpp * durationYears)}
+                      Total kontrak {durationYears} tahun: {formatCurrency(costingCore.selectedHpp * Number(durationYears))}
                     </p>
                   </div>
                 )}

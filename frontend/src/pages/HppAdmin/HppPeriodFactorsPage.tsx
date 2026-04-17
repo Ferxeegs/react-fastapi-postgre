@@ -7,11 +7,17 @@ import { Modal } from "../../components/ui/modal";
 import { useModal } from "../../hooks/useModal";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { useToast } from "../../context/ToastContext";
+import { blurNormalizeDecimalDraft, blurNormalizeIntDraft, parseDecimalDraft, parseDigitsOnlyDraft } from "./numericFormDraft";
 
 export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState({ period_duration: "", min_year: 1, max_year: 5, percentage: 0 });
+  const [form, setForm] = useState({
+    period_duration: "",
+    min_year: "1",
+    max_year: "5",
+    percentage: "",
+  });
   const [search, setSearch] = useState("");
   const { isOpen, openModal, closeModal } = useModal();
   const { success, error: showError } = useToast();
@@ -23,7 +29,7 @@ export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: 
   useEffect(() => { load(); }, []);
 
   const resetForm = () => {
-    setForm({ period_duration: "", min_year: 1, max_year: 5, percentage: 0 });
+    setForm({ period_duration: "", min_year: "1", max_year: "5", percentage: "" });
     setEditingId(null);
   };
   const filteredRows = rows.filter((item) =>
@@ -93,9 +99,9 @@ export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: 
                             setEditingId(r.id);
                             setForm({
                               period_duration: r.period_duration,
-                              min_year: Number(r.min_year ?? 1),
-                              max_year: Number(r.max_year ?? 5),
-                              percentage: Number(r.percentage),
+                              min_year: String(Number(r.min_year ?? 1)),
+                              max_year: String(Number(r.max_year ?? 5)),
+                              percentage: r.percentage == null || r.percentage === "" ? "" : String(Number(r.percentage)),
                             });
                             openModal();
                           }}
@@ -141,16 +147,61 @@ export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Min Tahun</label>
-              <input type="number" min={1} max={99} placeholder="1" value={form.min_year} onChange={(e) => setForm({ ...form, min_year: Number(e.target.value) })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" />
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="1"
+                autoComplete="off"
+                value={form.min_year}
+                onChange={(e) => {
+                  const next = parseDigitsOnlyDraft(e);
+                  if (next !== null) setForm({ ...form, min_year: next });
+                }}
+                onBlur={() => {
+                  const t = blurNormalizeIntDraft(form.min_year);
+                  if (t !== form.min_year) setForm({ ...form, min_year: t });
+                }}
+                className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
+              />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Max Tahun</label>
-              <input type="number" min={1} max={99} placeholder="5" value={form.max_year} onChange={(e) => setForm({ ...form, max_year: Number(e.target.value) })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" />
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="5"
+                autoComplete="off"
+                value={form.max_year}
+                onChange={(e) => {
+                  const next = parseDigitsOnlyDraft(e);
+                  if (next !== null) setForm({ ...form, max_year: next });
+                }}
+                onBlur={() => {
+                  const t = blurNormalizeIntDraft(form.max_year);
+                  if (t !== form.max_year) setForm({ ...form, max_year: t });
+                }}
+                className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
+              />
             </div>
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Percentage (%)</label>
-            <input type="number" placeholder="0" value={form.percentage} onChange={(e) => setForm({ ...form, percentage: Number(e.target.value) })} className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500" />
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="Mis. 100"
+              autoComplete="off"
+              value={form.percentage}
+              onChange={(e) => {
+                const next = parseDecimalDraft(e);
+                if (next !== null) setForm({ ...form, percentage: next });
+              }}
+              onBlur={() => {
+                const t = blurNormalizeDecimalDraft(form.percentage);
+                if (t !== form.percentage) setForm({ ...form, percentage: t });
+              }}
+              className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:text-white dark:focus:border-brand-500"
+            />
           </div>
           <p className="text-xs leading-relaxed text-gray-500 dark:text-gray-400">
             Min/Max tahun memfilter baris saat satuan sewa <strong>Tahunan</strong> (FP3). Untuk bulanan/harian/per jam, isi 1–5 atau rentang lebar agar tetap cocok.
@@ -164,11 +215,41 @@ export default function HppPeriodFactorsPage({ embedded = false }: { embedded?: 
             className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1" 
             onClick={async () => {
               try {
+                const pctTrim = form.percentage.trim();
+                if (pctTrim === "") {
+                  showError("Isi percentage (%).");
+                  return;
+                }
+                const percentage = Number(pctTrim.replace(",", "."));
+                if (!Number.isFinite(percentage) || percentage < 0) {
+                  showError("Percentage harus berupa angka yang valid.");
+                  return;
+                }
+                const minY = Number(form.min_year.trim());
+                const maxY = Number(form.max_year.trim());
+                if (!Number.isInteger(minY) || minY < 1) {
+                  showError("Min tahun harus bilangan bulat ≥ 1.");
+                  return;
+                }
+                if (!Number.isInteger(maxY) || maxY < 1) {
+                  showError("Max tahun harus bilangan bulat ≥ 1.");
+                  return;
+                }
+                if (minY > maxY) {
+                  showError("Min tahun tidak boleh lebih besar dari max tahun.");
+                  return;
+                }
+                const payload = {
+                  period_duration: form.period_duration,
+                  min_year: minY,
+                  max_year: maxY,
+                  percentage,
+                };
                 if (editingId) {
-                  await hppAPI.updateAdminPeriodFactor(editingId, form);
+                  await hppAPI.updateAdminPeriodFactor(editingId, payload);
                   success("Faktor periode berhasil diperbarui!");
                 } else {
-                  await hppAPI.createAdminPeriodFactor(form);
+                  await hppAPI.createAdminPeriodFactor(payload);
                   success("Faktor periode berhasil ditambahkan!");
                 }
                 closeModal();
